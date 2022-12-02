@@ -1,47 +1,20 @@
-package AOC2020;
-
-import Util.ReadFile;
+package AOC2020.AOC17;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Objects;
 
-public class AOC17 {
-    public static void main(String[] args) {
-        String file = ReadFile.from(2020, 17);
-        String[] lines = file.split("\\n");
-
-        int size = lines[0].length();
-        PointGrid grid = new PointGrid(size);
-
-        int y = 0;
-
-        for (String line : lines) {
-            char[] chars = line.toCharArray();
-            for (int x = 0; x < chars.length; x++) {
-                boolean on = chars[x] == '#';
-                grid.addPoint(new Point(x - size / 2, y - size / 2, 0), on);
-            }
-            y++;
-        }
-
-        for (int i = 0; i < 6; i++) {
-            grid.update();
-        }
-
-        System.out.println(grid.part1());
-    }
-}
-
-class Point {
+class Point4D {
     public int x;
     public int y;
     public int z;
+    public int w;
 
-    public Point(int x, int y, int z) {
+    public Point4D(int x, int y, int z, int w) {
         this.x = x;
         this.y = y;
         this.z = z;
+        this.w = w;
     }
 
     /*
@@ -49,20 +22,22 @@ class Point {
     If a cube is active and exactly 2 or 3 of its neighbors are also active, the cube remains active. Otherwise, the cube becomes inactive.
     If a cube is inactive but exactly 3 of its neighbors are active, the cube becomes active. Otherwise, the cube remains inactive.
     */
-    public boolean changeState(HashMap<Point, Boolean> points) {
+    public boolean changeState(HashMap<Point4D, Boolean> points) {
         boolean active = points.get(this);
         int actives = 0;
 
         for (int sx = x - 1; sx <= x + 1; sx++) {
             for (int sy = y - 1; sy <= y + 1; sy++) {
                 for (int sz = z - 1; sz <= z + 1; sz++) {
-                    if (sx == x && sy == y && sz == z) {
-                        continue;
-                    }
+                    for (int sw = w - 1; sw <= w + 1; sw++) {
+                        if (sx == x && sy == y && sz == z && sw == w) {
+                            continue;
+                        }
 
-                    Point p = new Point(sx, sy, sz);
-                    if (points.containsKey(p) && points.get(p)) {
-                        actives++;
+                        Point4D p = new Point4D(sx, sy, sz, sw);
+                        if (points.containsKey(p) && points.get(p)) {
+                            actives++;
+                        }
                     }
                 }
             }
@@ -79,51 +54,53 @@ class Point {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        Point point = (Point) o;
-        return x == point.x && y == point.y && z == point.z;
+        Point4D point = (Point4D) o;
+        return x == point.x && y == point.y && z == point.z && w == point.w;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(x, y, z);
+        return Objects.hash(x, y, z, w);
     }
 
     @Override
     public String toString() {
-        return "(" + x + ", " + y + ", " + z + ")";
+        return "(" + x + ", " + y + ", " + z + ", " + w + ")";
     }
 }
 
-class PointGrid {
-    public HashMap<Point, Boolean> points = new HashMap<>();
+class PointGrid4D {
+    public HashMap<Point4D, Boolean> points = new HashMap<>();
     public int size;
-    public int zSize = 1;
+    public int zwSize = 1;
 
-    public PointGrid(int size) {
+    public PointGrid4D(int size) {
         this.size = size;
     }
 
-    public void addPoint(Point p, boolean on) {
+    public void addPoint(Point4D p, boolean on) {
         points.put(p, on);
     }
 
     public void update() {
         // expand by 1 dimension
         size += 2;
-        zSize += 2;
+        zwSize += 2;
         for (int x = -size / 2; x <= size / 2; x++) {
             for (int y = -size / 2; y <= size / 2; y++) {
-                for (int z = -zSize / 2; z <= zSize / 2; z++) {
-                    Point p = new Point(x, y, z);
-                    if (!points.containsKey(p)) {
-                        points.put(p, false);
+                for (int z = -zwSize / 2; z <= zwSize / 2; z++) {
+                    for (int w = -zwSize / 2; w <= zwSize / 2; w++) {
+                        Point4D p = new Point4D(x, y, z, w);
+                        if (!points.containsKey(p)) {
+                            points.put(p, false);
+                        }
                     }
                 }
             }
         }
 
-        HashMap<Point, Boolean> newPoints = new HashMap<>();
-        for (Point point : points.keySet()) {
+        HashMap<Point4D, Boolean> newPoints = new HashMap<>();
+        for (Point4D point : points.keySet()) {
             boolean newState = point.changeState(points);
             newPoints.put(point, newState);
         }
@@ -131,7 +108,7 @@ class PointGrid {
         points = newPoints;
     }
 
-    public int part1() {
+    public int findActive() {
         int out = 0;
 
         for (boolean b : points.values()) {
@@ -146,18 +123,18 @@ class PointGrid {
         return formatMap(points);
     }
 
-    private String formatMap(HashMap<Point, Boolean> points) {
+    private String formatMap(HashMap<Point4D, Boolean> points) {
         // z : [spread]
-        HashMap<Integer, ArrayList<Point>> parsed = new HashMap<>();
+        HashMap<Integer, ArrayList<Point4D>> parsed = new HashMap<>();
 
-        for (Point p : points.keySet()) {
+        for (Point4D p : points.keySet()) {
             int z = p.z;
 
             if (!parsed.containsKey(z)) {
                 parsed.put(z, new ArrayList<>());
             }
 
-            ArrayList<Point> grid = parsed.get(z);
+            ArrayList<Point4D> grid = parsed.get(z);
             grid.add(p);
         }
 
@@ -166,8 +143,8 @@ class PointGrid {
         for (int z : parsed.keySet().stream().sorted(Integer::compareTo).toList()) {
             char[][] grid = new char[size * 2 + 1][size * 2 + 1];
 
-            ArrayList<Point> pointList = parsed.get(z);
-            for (Point p : pointList) {
+            ArrayList<Point4D> pointList = parsed.get(z);
+            for (Point4D p : pointList) {
                 grid[p.y + size / 2][p.x + size / 2] = points.get(p) ? '#' : '.';
             }
 
