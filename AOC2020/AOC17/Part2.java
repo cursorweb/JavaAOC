@@ -140,7 +140,7 @@ class PointGrid4D {
 
         StringBuilder out = new StringBuilder();
 
-        for (int z : parsed.keySet().stream().sorted(Integer::compareTo).toList()) {
+        for (int z : (Integer[])parsed.keySet().stream().sorted(Integer::compareTo).toArray()) {
             // w, [scatter of x and y]
             HashMap<Integer, ArrayList<Point4D>> parsed4D = new HashMap<>();
 
@@ -155,7 +155,7 @@ class PointGrid4D {
                 grid.add(p);
             }
 
-            for (int w : parsed.keySet().stream().sorted(Integer::compareTo).toList()) {
+            for (int w : (Integer[])parsed.keySet().stream().sorted(Integer::compareTo).toArray()) {
                 char[][] grid = new char[size * 2 + 1][size * 2 + 1];
 
                 ArrayList<Point4D> pointList = parsed4D.get(w);

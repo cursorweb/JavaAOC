@@ -134,7 +134,7 @@ class PointGrid3D {
 
         StringBuilder out = new StringBuilder();
 
-        for (int z : parsed.keySet().stream().sorted(Integer::compareTo).toList()) {
+        for (int z : (Integer[])parsed.keySet().stream().sorted(Integer::compareTo).toArray()) {
             char[][] grid = new char[size * 2 + 1][size * 2 + 1];
 
             ArrayList<Point3D> pointList = parsed.get(z);
