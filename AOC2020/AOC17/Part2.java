@@ -141,25 +141,41 @@ class PointGrid4D {
         StringBuilder out = new StringBuilder();
 
         for (int z : parsed.keySet().stream().sorted(Integer::compareTo).toList()) {
-            char[][] grid = new char[size * 2 + 1][size * 2 + 1];
+            // w, [scatter of x and y]
+            HashMap<Integer, ArrayList<Point4D>> parsed4D = new HashMap<>();
 
-            ArrayList<Point4D> pointList = parsed.get(z);
-            for (Point4D p : pointList) {
-                grid[p.y + size / 2][p.x + size / 2] = points.get(p) ? '#' : '.';
-            }
+            for (Point4D p : points.keySet()) {
+                int w = p.w;
 
-            StringBuilder gridS = new StringBuilder();
-
-            for (int i = 0; i < size; i++) {
-                for (int j = 0; j < size; j++) {
-                    gridS.append(grid[i][j]);
+                if (!parsed4D.containsKey(w)) {
+                    parsed4D.put(w, new ArrayList<>());
                 }
-                gridS.append("\n");
+
+                ArrayList<Point4D> grid = parsed4D.get(w);
+                grid.add(p);
             }
 
-            out.append("z = ").append(z).append("\n");
-            out.append(gridS);
-            out.append("\n");
+            for (int w : parsed.keySet().stream().sorted(Integer::compareTo).toList()) {
+                char[][] grid = new char[size * 2 + 1][size * 2 + 1];
+
+                ArrayList<Point4D> pointList = parsed4D.get(w);
+                for (Point4D p : pointList) {
+                    grid[p.y + size / 2][p.x + size / 2] = points.get(p) ? '#' : '.';
+                }
+
+                StringBuilder gridS = new StringBuilder();
+
+                for (int i = 0; i < size; i++) {
+                    for (int j = 0; j < size; j++) {
+                        gridS.append(grid[i][j]);
+                    }
+                    gridS.append("\n");
+                }
+
+                out.append("z = ").append(z).append(", w = ").append(w).append("\n");
+                out.append(gridS);
+                out.append("\n\n");
+            }
         }
 
         return out.toString();
