@@ -87,11 +87,11 @@ public class AOC5 {
             buckets1.get(to - 1).addAll(crates);
         }
 
-        String part1 = "";
+        StringBuilder part1 = new StringBuilder();
 
         for (int i = 0; i < buckets1.size(); i++) {
             ArrayList<Character> bucket = buckets1.get(i);
-            part1 += bucket.get(bucket.size() - 1);
+            part1.append(bucket.get(bucket.size() - 1));
         }
 
         System.out.println("Part1: " + part1);
