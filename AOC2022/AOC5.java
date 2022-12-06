@@ -85,15 +85,27 @@ public class AOC5 {
             }
 
             buckets1.get(to - 1).addAll(crates);
+
+            ArrayList<Character> bucket = buckets2.get(from - 1);
+            ArrayList<Character> crates2 = new ArrayList<>(bucket.subList(bucket.size() - move, bucket.size()));
+            ArrayList<Character> rest = new ArrayList<>(bucket.subList(0, bucket.size() - move));
+
+            buckets2.get(to - 1).addAll(crates2);
+            buckets2.put(from - 1, rest);
         }
 
         StringBuilder part1 = new StringBuilder();
+        StringBuilder part2 = new StringBuilder();
 
         for (int i = 0; i < buckets1.size(); i++) {
             ArrayList<Character> bucket = buckets1.get(i);
             part1.append(bucket.get(bucket.size() - 1));
+
+            ArrayList<Character> bucket2 = buckets2.get(i);
+            part2.append(bucket2.get(bucket2.size() - 1));
         }
 
         System.out.println("Part1: " + part1);
+        System.out.println("Part2: " + part2);
     }
 }
