@@ -60,11 +60,29 @@ public class AOC7 {
             i++;
         }
 
-        System.out.println("Part1: " + totalSum(rootFolder));
-    }
+        ArrayList<Integer> dirs = new ArrayList<>();
+        System.out.println("Part1: " + totalSum(rootFolder, dirs));
 
-    private static int totalSum(Folder f) {
-        return totalSum(f, new ArrayList<>());
+        int totalSpace = 70_000_000;
+        int minUnusedSpace = 30_000_000;
+
+        int currentlyUsing = rootFolder.getSize();
+        int currentlyUnused = totalSpace - currentlyUsing;
+        int minSize = minUnusedSpace - currentlyUnused;
+
+        int min = totalSpace;
+
+        for (int dir : dirs) {
+            if (dir < minSize) {
+                continue;
+            }
+
+            if (dir < min) {
+                min = dir;
+            }
+        }
+
+        System.out.println("Part2: " + min);
     }
 
     private static int totalSum(Folder f, ArrayList<Integer> sizes) {
@@ -77,7 +95,7 @@ public class AOC7 {
 
         int sum = 0;
         for (int x : sizes) {
-            if (x < 100000) {
+            if (x < 100_000) {
                 sum += x;
             }
         }
