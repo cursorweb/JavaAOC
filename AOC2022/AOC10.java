@@ -48,7 +48,5 @@ public class AOC10 {
         } else {
             grid.append(".");
         }
-
-//        System.out.println("cycle " + cycles + ", X = " + X + ", POS=" + pos + ", " + grid);
     }
 }
