@@ -81,10 +81,10 @@ class Point {
 
     public void move(char dir) {
         switch (dir) {
-            case 'U' -> y++;
-            case 'D' -> y--;
-            case 'L' -> x--;
-            case 'R' -> x++;
+            case 'U': y++; break;
+            case 'D': y--; break;
+            case 'L': x--; break;
+            case 'R': x++; break;
         }
     }
 
