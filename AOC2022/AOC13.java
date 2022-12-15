@@ -20,20 +20,47 @@ public class AOC13 {
         }
 
         int sum = 0;
-        int i = 0;
-        for (Array[] arr : arrObjs) {
-            Array left = arr[0];
-            Array right = arr[1];
 
-            if (left.compare(right) == -1) {
-                sum += i + 1;
+        {
+            int i = 0;
+            for (Array[] arr : arrObjs) {
+                Array left = arr[0];
+                Array right = arr[1];
+
+                if (left.compare(right) == -1) {
+                    sum += i + 1;
+                }
+
+                i++;
             }
-
-            i++;
-//            System.out.println("\n\n");
         }
 
         System.out.println("Part1: " + sum);
+
+        ArrayList<Array> sortMe = new ArrayList<>();
+        for (Array[] item : arrObjs) {
+            sortMe.add(item[0]);
+            sortMe.add(item[1]);
+        }
+
+        Array div1 = new Array(new Array(2));
+        Array div2 = new Array(new Array(6));
+        sortMe.add(div1);
+        sortMe.add(div2);
+
+        sortMe.sort(Array::compare);
+
+        int index1 = -1, index2 = -1;
+        for (int i = 0; i < sortMe.size(); i++) {
+            Array arr = sortMe.get(i);
+            if (arr == div1) {
+                index1 = i + 1;
+            } else if (arr == div2) {
+                index2 = i + 1;
+            }
+        }
+
+        System.out.println("Part2: " + (index1 * index2));
     }
 }
 
@@ -54,7 +81,6 @@ class Number extends Branch {
 
     @Override
     public int compare(Branch b) {
-//        System.out.println("Compare " + val + " and " + b);
         if (b instanceof Number) {
             return (int) Math.signum(val - ((Number) b).val);
         } else {
@@ -78,6 +104,11 @@ class Array extends Branch {
     public Array(int val) {
         this.val = new ArrayList<>();
         this.val.add(new Number(val));
+    }
+
+    public Array(Array val) {
+        this.val = new ArrayList<>();
+        this.val.add(val);
     }
 
     public static Array from(String x) {
@@ -120,36 +151,27 @@ class Array extends Branch {
 
     @Override
     public int compare(Branch bObj) {
-//        System.out.println("Comparing " + val + " " + bObj);
         if (bObj instanceof Array) {
             Array b = (Array) bObj;
             for (int i = 0; i < Math.min(val.size(), b.val.size()); i++) {
-//                System.out.println("Compare " + val.get(i) + " and " + b.val.get(i));
-
                 int result = val.get(i).compare(b.val.get(i));
 
                 if (result == 1) {
-//                    System.out.println("Wrong order");
                     return 1;
                 }
 
                 if (result == -1) {
-//                    System.out.println("Right order");
                     return -1;
                 }
             }
 
             if (val.size() != b.val.size()) {
-//                System.out.println("Different array size");
-//                System.out.println("So: " + (((int)Math.signum(val.size() - b.val.size()) == -1) ? "Right order" : "Wrong order"));
-                return (int)Math.signum(val.size() - b.val.size());
+                return (int) Math.signum(val.size() - b.val.size());
             }
 
-//            System.out.println("No order");
             return 0;
         } else {
             Number b = (Number) bObj;
-//            System.out.println("Cast left to array: " + b.val);
             return compare(new Array(b.val));
         }
     }
