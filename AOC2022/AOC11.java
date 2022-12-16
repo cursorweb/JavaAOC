@@ -154,28 +154,29 @@ public class AOC11 {
 
         // CRT: Chinese Remainder Theorem
     }
-}
 
-class Monkey {
-    public ArrayList<Long> items;
+    private static
+    class Monkey {
+        public ArrayList<Long> items;
 
-    public String op;
+        public String op;
 
-    public int test;
+        public int test;
 
-    public int ifTrue;
-    public int ifFalse;
+        public int ifTrue;
+        public int ifFalse;
 
-    public Monkey(ArrayList<Long> items, String op, int test, int ifTrue, int ifFalse) {
-        this.items = items;
-        this.op = op;
-        this.test = test;
-        this.ifTrue = ifTrue;
-        this.ifFalse = ifFalse;
-    }
+        public Monkey(ArrayList<Long> items, String op, int test, int ifTrue, int ifFalse) {
+            this.items = items;
+            this.op = op;
+            this.test = test;
+            this.ifTrue = ifTrue;
+            this.ifFalse = ifFalse;
+        }
 
-    @Override
-    public String toString() {
-        return "Items: " + items + "\nOp: " + op + "\nTest: " + test + "\n  ifTrue: " + ifTrue + "\n  ifFalse: " + ifFalse;
+        @Override
+        public String toString() {
+            return "Items: " + items + "\nOp: " + op + "\nTest: " + test + "\n  ifTrue: " + ifTrue + "\n  ifFalse: " + ifFalse;
+        }
     }
 }

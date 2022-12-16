@@ -102,86 +102,87 @@ public class AOC7 {
 
         return sum;
     }
-}
 
-abstract class Item {
-    public String name;
+    private static
+    abstract class Item {
+        public String name;
 
-    public abstract String toString(int amt);
-}
-
-class File extends Item {
-    public int size;
-
-    public File(String name, int size) {
-        this.name = name;
-        this.size = size;
+        public abstract String toString(int amt);
     }
 
-    public String toString() {
-        return toString(0);
+    private static class File extends Item {
+        public int size;
+
+        public File(String name, int size) {
+            this.name = name;
+            this.size = size;
+        }
+
+        public String toString() {
+            return toString(0);
+        }
+
+        public String toString(int amt) {
+            return name + " (size=" + size + ")";
+        }
     }
 
-    public String toString(int amt) {
-        return name + " (size=" + size + ")";
-    }
-}
+    private static class Folder extends Item {
+        public ArrayList<Item> items;
 
-class Folder extends Item {
-    public ArrayList<Item> items;
+        public Folder(String name) {
+            this.name = name;
+            this.items = new ArrayList<>();
+        }
 
-    public Folder(String name) {
-        this.name = name;
-        this.items = new ArrayList<>();
-    }
+        public void addItem(List<String> path, Item item) {
+            if (path.size() == 0) {
+                items.add(item);
+            } else {
+                String path0 = path.get(0);
 
-    public void addItem(List<String> path, Item item) {
-        if (path.size() == 0) {
-            items.add(item);
-        } else {
-            String path0 = path.get(0);
+                for (Item i : items) {
+                    if (i.name.equals(path0)) {
+                        ((Folder) i).addItem(path.subList(1, path.size()), item);
+                        return;
+                    }
+                }
 
-            for (Item i : items) {
-                if (i.name.equals(path0)) {
-                    ((Folder) i).addItem(path.subList(1, path.size()), item);
-                    return;
+                // not found
+                Folder folder = new Folder(path0);
+                items.add(folder);
+                folder.addItem(path.subList(1, path.size()), item);
+            }
+        }
+
+        public int getSize() {
+            int sum = 0;
+
+            for (Item item : items) {
+                if (item instanceof Folder) {
+                    sum += ((Folder) item).getSize();
+                } else {
+                    sum += ((File) item).size;
                 }
             }
 
-            // not found
-            Folder folder = new Folder(path0);
-            items.add(folder);
-            folder.addItem(path.subList(1, path.size()), item);
-        }
-    }
-
-    public int getSize() {
-        int sum = 0;
-
-        for (Item item : items) {
-            if (item instanceof Folder) {
-                sum += ((Folder) item).getSize();
-            } else {
-                sum += ((File) item).size;
-            }
+            return sum;
         }
 
-        return sum;
-    }
+        public String toString() {
+            return toString(1);
+        }
 
-    public String toString() {
-        return toString(1);
-    }
+        public String toString(int amt) {
+            StringBuilder out = new StringBuilder(name + "/");
 
-    public String toString(int amt) {
-        StringBuilder out = new StringBuilder(name + "/");
-
-        out.append("\n");
-        for (Item itm : items) {
-            out.append(new String(new char[amt]).replace("\0", "  ")).append(itm.toString(amt + 1));
             out.append("\n");
-        }
+            for (Item itm : items) {
+                out.append(new String(new char[amt]).replace("\0", "  ")).append(itm.toString(amt + 1));
+                out.append("\n");
+            }
 
-        return out.toString();
+            return out.toString();
+        }
     }
 }

@@ -30,30 +30,30 @@ public class AOC4 {
         System.out.println("Part1: " + part1);
         System.out.println("Part2: " + part2);
     }
-}
 
-class Range {
-    private final int start;
-    private final int end;
+    private static class Range {
+        private final int start;
+        private final int end;
 
-    public Range(int start, int end) {
-        this.start = start;
-        this.end = end;
+        public Range(int start, int end) {
+            this.start = start;
+            this.end = end;
+        }
+
+        public boolean fullyContain(Range other) {
+            return (this.start >= other.start && this.end <= other.end) || (other.start >= this.start && other.end <= this.end);
+        }
+
+        /*       |....|
+         *    |....|
+         *
+         *    |....|
+         *       |....|
+         */
+        public boolean overlap(Range other) {
+            // alternate: this.start <= other.end && this.end >= other.start
+            return fullyContain(other) || (this.start >= other.start && this.start <= other.end) || (this.end >= other.start && this.end <= other.end);
+        }
+
     }
-
-    public boolean fullyContain(Range other) {
-        return (this.start >= other.start && this.end <= other.end) || (other.start >= this.start && other.end <= this.end);
-    }
-
-    /*       |....|
-     *    |....|
-     *
-     *    |....|
-     *       |....|
-     */
-    public boolean overlap(Range other) {
-        // alternate: this.start <= other.end && this.end >= other.start
-        return fullyContain(other) || (this.start >= other.start && this.start <= other.end) || (this.end >= other.start && this.end <= other.end);
-    }
-
 }

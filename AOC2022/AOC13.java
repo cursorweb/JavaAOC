@@ -62,131 +62,130 @@ public class AOC13 {
 
         System.out.println("Part2: " + (index1 * index2));
     }
-}
 
-
-abstract class Branch {
-    // -1 = A < B
-    // 0 = [] -> []??
-    // 1 = A > B
-    public abstract int compare(Branch b);
-}
-
-class Number extends Branch {
-    int val;
-
-    public Number(int val) {
-        this.val = val;
+    private static abstract class Branch {
+        // -1 = A < B
+        // 0 = [] -> []??
+        // 1 = A > B
+        public abstract int compare(Branch b);
     }
 
-    @Override
-    public int compare(Branch b) {
-        if (b instanceof Number) {
-            return (int) Math.signum(val - ((Number) b).val);
-        } else {
-            return new Array(val).compare(b);
-        }
-    }
+    private static class Number extends Branch {
+        int val;
 
-    @Override
-    public String toString() {
-        return val + "";
-    }
-}
-
-class Array extends Branch {
-    ArrayList<Branch> val;
-
-    public Array(ArrayList<Branch> val) {
-        this.val = val;
-    }
-
-    public Array(int val) {
-        this.val = new ArrayList<>();
-        this.val.add(new Number(val));
-    }
-
-    public Array(Array val) {
-        this.val = new ArrayList<>();
-        this.val.add(val);
-    }
-
-    public static Array from(String x) {
-        if (x.length() == 0) {
-            return new Array(new ArrayList<>());
+        public Number(int val) {
+            this.val = val;
         }
 
-        ArrayList<Branch> branches = new ArrayList<>();
-        ArrayList<String> items = new ArrayList<>();
-        int nest = 0;
-        StringBuilder current = new StringBuilder();
-
-        for (char c : x.toCharArray()) {
-            if (c == '[') {
-                nest++;
-            } else if (c == ']') {
-                nest--;
-            } else if (c == ',' && nest == 0) {
-                items.add(current.toString());
-                current = new StringBuilder();
-                continue;
-            }
-
-            current.append(c);
-        }
-
-        // add the last one w/o comma
-        items.add(current.toString());
-
-        for (String item : items) {
-            if (!item.startsWith("[")) {
-                branches.add(new Number(Integer.parseInt(item)));
+        @Override
+        public int compare(Branch b) {
+            if (b instanceof Number) {
+                return (int) Math.signum(val - ((Number) b).val);
             } else {
-                branches.add(from(item.substring(1, item.length() - 1)));
+                return new Array(val).compare(b);
             }
         }
 
-        return new Array(branches);
-    }
-
-    @Override
-    public int compare(Branch bObj) {
-        if (bObj instanceof Array) {
-            Array b = (Array) bObj;
-            for (int i = 0; i < Math.min(val.size(), b.val.size()); i++) {
-                int result = val.get(i).compare(b.val.get(i));
-
-                if (result == 1) {
-                    return 1;
-                }
-
-                if (result == -1) {
-                    return -1;
-                }
-            }
-
-            if (val.size() != b.val.size()) {
-                return (int) Math.signum(val.size() - b.val.size());
-            }
-
-            return 0;
-        } else {
-            Number b = (Number) bObj;
-            return compare(new Array(b.val));
+        @Override
+        public String toString() {
+            return val + "";
         }
     }
 
-    @Override
-    public String toString() {
-        StringBuilder out = new StringBuilder("{");
+    private static class Array extends Branch {
+        ArrayList<Branch> val;
 
-        for (Branch x : val) {
-            out.append(x);
-            out.append(",");
+        public Array(ArrayList<Branch> val) {
+            this.val = val;
         }
 
-        out.append("}");
+        public Array(int val) {
+            this.val = new ArrayList<>();
+            this.val.add(new Number(val));
+        }
 
-        return out.toString();
+        public Array(Array val) {
+            this.val = new ArrayList<>();
+            this.val.add(val);
+        }
+
+        public static Array from(String x) {
+            if (x.length() == 0) {
+                return new Array(new ArrayList<>());
+            }
+
+            ArrayList<Branch> branches = new ArrayList<>();
+            ArrayList<String> items = new ArrayList<>();
+            int nest = 0;
+            StringBuilder current = new StringBuilder();
+
+            for (char c : x.toCharArray()) {
+                if (c == '[') {
+                    nest++;
+                } else if (c == ']') {
+                    nest--;
+                } else if (c == ',' && nest == 0) {
+                    items.add(current.toString());
+                    current = new StringBuilder();
+                    continue;
+                }
+
+                current.append(c);
+            }
+
+            // add the last one w/o comma
+            items.add(current.toString());
+
+            for (String item : items) {
+                if (!item.startsWith("[")) {
+                    branches.add(new Number(Integer.parseInt(item)));
+                } else {
+                    branches.add(from(item.substring(1, item.length() - 1)));
+                }
+            }
+
+            return new Array(branches);
+        }
+
+        @Override
+        public int compare(Branch bObj) {
+            if (bObj instanceof Array) {
+                Array b = (Array) bObj;
+                for (int i = 0; i < Math.min(val.size(), b.val.size()); i++) {
+                    int result = val.get(i).compare(b.val.get(i));
+
+                    if (result == 1) {
+                        return 1;
+                    }
+
+                    if (result == -1) {
+                        return -1;
+                    }
+                }
+
+                if (val.size() != b.val.size()) {
+                    return (int) Math.signum(val.size() - b.val.size());
+                }
+
+                return 0;
+            } else {
+                Number b = (Number) bObj;
+                return compare(new Array(b.val));
+            }
+        }
+
+        @Override
+        public String toString() {
+            StringBuilder out = new StringBuilder("{");
+
+            for (Branch x : val) {
+                out.append(x);
+                out.append(",");
+            }
+
+            out.append("}");
+
+            return out.toString();
+        }
     }
 }

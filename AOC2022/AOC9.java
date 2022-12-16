@@ -64,63 +64,71 @@ public class AOC9 {
         System.out.println("Part1: " + visitedSingle.size());
         System.out.println("Part2: " + visitedMulti.size());
     }
-}
 
-class Point {
-    public int x;
-    public int y;
+    private static class Point {
+        public int x;
+        public int y;
 
-    public Point() {
-        x = 0;
-        y = 0;
-    }
-
-    public boolean notTouches(Point other) {
-        return Math.abs(other.x - x) > 1 || Math.abs(other.y - y) > 1;
-    }
-
-    public void move(char dir) {
-        switch (dir) {
-            case 'U': y++; break;
-            case 'D': y--; break;
-            case 'L': x--; break;
-            case 'R': x++; break;
-        }
-    }
-
-    public void catchup(Point other) {
-        if (x < other.x) {
-            x++;
+        public Point() {
+            x = 0;
+            y = 0;
         }
 
-        if (x > other.x) {
-            x--;
+        public boolean notTouches(Point other) {
+            return Math.abs(other.x - x) > 1 || Math.abs(other.y - y) > 1;
         }
 
-        if (y < other.y) {
-            y++;
+        public void move(char dir) {
+            switch (dir) {
+                case 'U':
+                    y++;
+                    break;
+                case 'D':
+                    y--;
+                    break;
+                case 'L':
+                    x--;
+                    break;
+                case 'R':
+                    x++;
+                    break;
+            }
         }
 
-        if (y > other.y) {
-            y--;
+        public void catchup(Point other) {
+            if (x < other.x) {
+                x++;
+            }
+
+            if (x > other.x) {
+                x--;
+            }
+
+            if (y < other.y) {
+                y++;
+            }
+
+            if (y > other.y) {
+                y--;
+            }
         }
-    }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        Point point = (Point) o;
-        return x == point.x && y == point.y;
-    }
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            Point point = (Point) o;
+            return x == point.x && y == point.y;
+        }
 
-    @Override
-    public int hashCode() {
-        return toString().hashCode();
-    }
+        @Override
+        public int hashCode() {
+            return toString().hashCode();
+        }
 
-    @Override
-    public String toString() {
-        return x + ", " + y;
+        @Override
+        public String toString() {
+            return x + ", " + y;
+        }
     }
 }
