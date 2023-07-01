@@ -1,5 +1,5 @@
 from read import read
-file = read()
+file = read(False)
 
 x = sorted(
     map(
