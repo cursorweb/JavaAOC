@@ -1,7 +1,3 @@
 {
-    "files.exclude": {
-        "**/__pycache__": true
-    },
-    "files.eol": "\n",
-    "python.analysis.typeCheckingMode": "basic"
+    "files.eol": "\n"
 }
