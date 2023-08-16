@@ -1,4 +1,4 @@
-pub mod aoc2023;
+pub mod aoc2022;
 
 #[macro_export]
 macro_rules! read {
