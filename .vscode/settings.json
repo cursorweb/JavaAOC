@@ -1,7 +1,3 @@
 {
-    "files.eol": "\n",
-    "editor.parameterHints.enabled": true,
-    "typescript.inlayHints.variableTypes.suppressWhenTypeMatchesName": true,
-    "rust-analyzer.inlayHints.typeHints.enable": true,
-    "rust-analyzer.inlayHints.renderColons": true
+    "files.eol": "\n"
 }
