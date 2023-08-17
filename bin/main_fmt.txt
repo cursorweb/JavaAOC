@@ -1,0 +1,5 @@
+use aoc::aoc{} as code;
+
+fn main() {{
+    code::day{}::run();
+}}
