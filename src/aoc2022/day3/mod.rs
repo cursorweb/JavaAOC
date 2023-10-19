@@ -20,16 +20,19 @@ pub fn run() {
     let mut part2 = 0;
     for i in (0..lines.len()).step_by(3) {
         let slice = lines[i..i + 3].iter();
-        
+
         // convert to sets
         let mut sets = slice.map(|line| line.chars().collect::<HashSet<_>>());
 
         // find intersection
-        let set = sets.next().map(|set| {
-            sets.fold(set, |prev, curr| {
-                prev.intersection(&curr).cloned().collect()
+        let set = sets
+            .next()
+            .map(|set| {
+                sets.fold(set, |prev, curr| {
+                    prev.intersection(&curr).cloned().collect()
+                })
             })
-        }).unwrap();
+            .unwrap();
 
         part2 += priority(set.iter().next().unwrap());
     }

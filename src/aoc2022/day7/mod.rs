@@ -62,7 +62,7 @@ pub fn run() {
     let total_size = folder.borrow().size(&mut folder_sizes);
 
     let part1: i32 = folder_sizes.iter().filter(|&&n| n <= 100_000).sum();
-    
+
     let disc_space = 70_000_000;
     let unused_space = disc_space - total_size;
     let unused = 30_000_000;
@@ -70,7 +70,10 @@ pub fn run() {
     // this is the number to be bigger than!
     let space_to_be_freed = unused - unused_space;
 
-    let mut folder_sizes: Vec<i32> = folder_sizes.into_iter().filter(|&n| n >= space_to_be_freed).collect();
+    let mut folder_sizes: Vec<i32> = folder_sizes
+        .into_iter()
+        .filter(|&n| n >= space_to_be_freed)
+        .collect();
     folder_sizes.sort();
 
     println!("Part1: {part1}");
