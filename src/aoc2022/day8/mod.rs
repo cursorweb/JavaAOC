@@ -11,10 +11,13 @@ pub fn run() {
     let width = trees[0].len();
 
     let mut count = 0;
+    let mut highest_score = -1;
 
     for row in 1..height - 1 {
-        'col: for col in 1..width - 1 {
+        for col in 1..width - 1 {
             let tree_height = trees[row][col];
+            let mut is_visible = false;
+            let mut scenic_score = 1;
 
             for (dy, dx) in DIRS {
                 let mut k = 1;
@@ -33,11 +36,23 @@ pub fn run() {
                         || offset(row, dy) == 0
                         || offset(col, dx) == 0
                     {
-                        count += 1;
-                        continue 'col;
+                        if !is_visible {
+                            is_visible = true;
+                            count += 1;
+                        }
+
+                        break;
                     }
 
                     k += 1;
+                }
+
+                scenic_score *= k;
+            }
+
+            if is_visible {
+                if scenic_score > highest_score {
+                    highest_score = scenic_score;
                 }
             }
         }
@@ -46,4 +61,5 @@ pub fn run() {
     count += 2 * width + 2 * height - 4; // perimeter
 
     println!("Part1: {count}");
+    println!("Part2: {highest_score}");
 }
