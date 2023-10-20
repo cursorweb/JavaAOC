@@ -21,6 +21,8 @@ pub fn run() {
 
             for (dy, dx) in DIRS {
                 let mut k = 1;
+
+                // go until you reach a border or get blocked
                 loop {
                     let offset = |p, d| (p as i32 + d * k) as usize;
 
@@ -29,7 +31,8 @@ pub fn run() {
                         break;
                     }
 
-                    // we reached a border
+                    // we reached a border tree
+                    // and it isn't blocked, so
                     // it's visible!
                     if offset(row, dy) == height - 1
                         || offset(col, dx) == width - 1
@@ -47,6 +50,7 @@ pub fn run() {
                     k += 1;
                 }
 
+                // k is how far we went from the tree
                 scenic_score *= k;
             }
 
@@ -58,7 +62,7 @@ pub fn run() {
         }
     }
 
-    count += 2 * width + 2 * height - 4; // perimeter
+    count += 2 * width + 2 * height - 4; // perimeter (minus double counted corners)
 
     println!("Part1: {count}");
     println!("Part2: {highest_score}");
