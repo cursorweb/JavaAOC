@@ -43,8 +43,8 @@ x == 0 mod (nk)
 
 has solutions x1 and x2, x1 == x2 (mod N)
 
-- in our case, x1 and x2 are ITEMS
-- modding N will mean they still satisfy x == 0 mod (n1)
+- in our case, x1 is big number, x2 is small number
+- x1 % N == x2
 */
 
 pub fn run() {
@@ -128,82 +128,53 @@ pub fn run() {
 
     let mut monkeys2: Vec<Monkey> = monkeys.clone();
 
-    // part1 monkeys
     for _ in 0..20 {
-        for i in 0..monkeys.len() {
-            loop {
-                let monkey = &mut monkeys[i];
-                let Some(mut item) = monkey.items.pop_front() else { break; };
-                monkey.items_inspected += 1;
-
-                match monkey.operation {
-                    Plus(n) => item += n,
-                    Times(n) => item *= n,
-                    Square => item *= item,
-                }
-
-                item /= 3;
-
-                // make monkey immutable again
-                // so we can mutate other monkeys
-                let monkey = &monkeys[i];
-                if item % monkey.test.div_by == 0 {
-                    let if_true = monkey.test.if_true;
-                    monkeys[if_true].items.push_back(item);
-                } else {
-                    let if_false = monkey.test.if_false;
-                    monkeys[if_false].items.push_back(item);
-                }
-            }
-        }
+        round(&mut monkeys, |num| num / 3);
     }
 
     for _ in 0..10_000 {
-        for i in 0..monkeys2.len() {
-            loop {
-                let monkey = &mut monkeys2[i];
-                let Some(mut item) = monkey.items.pop_front() else { break; };
-                monkey.items_inspected += 1;
+        round(&mut monkeys2, |num| num % big_n);
+    }
 
-                match monkey.operation {
-                    Plus(n) => item += n,
-                    Times(n) => item *= n,
-                    Square => item *= item,
-                }
+    println!("Part1: {}", top_banana(monkeys));
+    println!("Part2: {}", top_banana(monkeys2));
+}
 
-                item %= big_n;
+fn round(monkeys: &mut Vec<Monkey>, op: impl Fn(i64) -> i64) {
+    for i in 0..monkeys.len() {
+        loop {
+            let monkey = &mut monkeys[i];
+            let Some(mut item) = monkey.items.pop_front() else { break; };
+            monkey.items_inspected += 1;
 
-                // make monkey immutable again
-                // so we can mutate other monkeys
-                let monkey = &monkeys2[i];
-                if item % monkey.test.div_by == 0 {
-                    let if_true = monkey.test.if_true;
-                    monkeys2[if_true].items.push_back(item);
-                } else {
-                    let if_false = monkey.test.if_false;
-                    monkeys2[if_false].items.push_back(item);
-                }
+            match monkey.operation {
+                Plus(n) => item += n,
+                Times(n) => item *= n,
+                Square => item *= item,
+            }
+
+            item = op(item);
+
+            // make monkey immutable again
+            // so we can mutate other monkeys
+            let monkey = &monkeys[i];
+            if item % monkey.test.div_by == 0 {
+                let if_true = monkey.test.if_true;
+                monkeys[if_true].items.push_back(item);
+            } else {
+                let if_false = monkey.test.if_false;
+                monkeys[if_false].items.push_back(item);
             }
         }
     }
+}
 
+/// 😎🐒🍌
+fn top_banana(mut monkeys: Vec<Monkey>) -> i64 {
     monkeys.sort_by(|m1, m2| m2.items_inspected.cmp(&m1.items_inspected));
-    println!(
-        "Part1: {}",
-        monkeys
-            .iter()
-            .take(2)
-            .map(|m| m.items_inspected)
-            .product::<i64>()
-    );
-
-    monkeys2.sort_by(|m1, m2| m2.items_inspected.cmp(&m1.items_inspected));
-    println!(
-        "Part2: {}",
-        monkeys2
-            .iter()
-            .take(2)
-            .map(|m| m.items_inspected)
-            .product::<i64>()
-    );
+    monkeys
+        .iter()
+        .take(2)
+        .map(|m| m.items_inspected)
+        .product::<i64>()
 }
