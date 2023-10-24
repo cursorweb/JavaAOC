@@ -32,7 +32,7 @@ pub fn run() {
 
     let sum_indices: usize = packets
         .iter()
-        .map(|(left, right)| in_order(left, right, 1))
+        .map(|(left, right)| in_order(left, right))
         .enumerate()
         .filter_map(|(i, o)| {
             if o != Ordering::Less {
@@ -55,7 +55,7 @@ pub fn run() {
     packets.push(divider2.clone());
     packets.push(divider6.clone());
 
-    packets.sort_by(|left, right| in_order(left, right, 0));
+    packets.sort_by(|left, right| in_order(left, right));
 
     let mut idx = 1;
     let mut divider2_idx = 0;
@@ -75,7 +75,7 @@ pub fn run() {
 }
 
 /// ordering should be less than
-fn in_order(left: &Vec<Item>, right: &Vec<Item>, idt: usize) -> Ordering {
+fn in_order(left: &Vec<Item>, right: &Vec<Item>) -> Ordering {
     let left_iter = left.into_iter();
     let mut right_iter = right.into_iter();
 
@@ -83,39 +83,30 @@ fn in_order(left: &Vec<Item>, right: &Vec<Item>, idt: usize) -> Ordering {
         let right = match right_iter.next() {
             Some(right) => right,
             // right should not run out of items
-            None => {
-                // println!("{}Right ran out of items", "\t".repeat(idt));
-                return Ordering::Greater;
-            }
+            None => return Ordering::Greater,
         };
         match (left, right) {
             (Int(left), Int(right)) => {
-                // println!("{}Compare {left} vs {right}", "\t".repeat(idt));
                 if left > right {
-                    // println!("{}Left greater", "\t".repeat(idt + 1));
                     return Ordering::Greater;
                 } else if left < right {
-                    // println!("{}Left smaller (right order)", "\t".repeat(idt + 1));
                     return Ordering::Less;
                 }
             }
             (List(left), List(right)) => {
-                // println!("{}Comparing {left:?} vs {right:?}", "\t".repeat(idt));
-                let val = in_order(left, right, idt + 1);
+                let val = in_order(left, right);
                 if val != Ordering::Equal {
                     return val;
                 }
             }
             (&Int(left), List(right)) => {
-                // println!("{}Comparing [ {left:?} ] vs {right:?}", "\t".repeat(idt));
-                let val = in_order(&vec![Int(left)], right, idt + 1);
+                let val = in_order(&vec![Int(left)], right);
                 if val != Ordering::Equal {
                     return val;
                 }
             }
             (List(left), &Int(right)) => {
-                // println!("{}Comparing {left:?} vs [ {right} ]", "\t".repeat(idt));
-                let val = in_order(left, &vec![Int(right)], idt + 1);
+                let val = in_order(left, &vec![Int(right)]);
                 if val != Ordering::Equal {
                     return val;
                 }
@@ -125,11 +116,9 @@ fn in_order(left: &Vec<Item>, right: &Vec<Item>, idt: usize) -> Ordering {
 
     if right_iter.next().is_none() {
         // right same length as left
-        // println!("{}Right same length as left", "\t".repeat(idt));
         Ordering::Equal
     } else {
         // left ran out of items
-        // println!("{}Left ran out of items", "\t".repeat(idt));
         Ordering::Less
     }
 }
