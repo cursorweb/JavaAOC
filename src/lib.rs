@@ -21,13 +21,26 @@ macro_rules! read {
 }
 
 /// The four directions (up, down, left, right)
+/// It is in the form (y, x) with negative being up and left
 pub const DIRS: [(i32, i32); 4] = [(-1, 0), (1, 0), (0, -1), (0, 1)];
 
+/// in the form (y, x) with negative being up and left
 pub fn name_to_dirs(name: &str) -> (i32, i32) {
     match name {
-        "U" => (0, 1),
+        "U" => (-1, 0),
+        "R" => (0, 1),
+        "D" => (1, 0),
+        "L" => (0, -1),
+        _ => unreachable!(),
+    }
+}
+
+/// debug version for easy printing in the form (x, y)
+pub fn name_to_dirs_dbg(name: &str) -> (i32, i32) {
+    match name {
+        "U" => (0, -1),
         "R" => (1, 0),
-        "D" => (0, -1),
+        "D" => (0, 1),
         "L" => (-1, 0),
         _ => unreachable!(),
     }
