@@ -52,7 +52,8 @@ pub fn run() {
         dist.insert(name.to_string(), dists(&name, &valves));
     }
 
-    println!("{dist:#?}");
+    // println!("{dist:#?}");
+    println!("Part1: {}", bfs(&dist, &valves));
 }
 
 /// shortest dist to every other nonbroken valve
@@ -67,11 +68,7 @@ fn dists(from: &str, valves: &HashMap<String, Valve>) -> HashMap<String, i32> {
     // (name, dist)
     queue.push_back((from, 0));
 
-    loop {
-        let Some((name, dist)) = queue.pop_front() else {
-            break;
-        };
-
+    while let Some((name, dist)) = queue.pop_front() {
         let valve = &valves[name];
 
         if valve.flow != 0 && name != from {
@@ -94,11 +91,14 @@ fn dists(from: &str, valves: &HashMap<String, Valve>) -> HashMap<String, i32> {
 struct State {
     pos: String,
     time: i32,
-    opened: i32,
-    pressure: i32,
+    opened: HashSet<String>,
+    released: i32,
 }
 
-fn bfs(dist: &HashMap<String, HashMap<String, i32>>, valves: &HashMap<String, Valve>) {
+/// go through all possible paths
+/// and then, if the pressure released is better than for number of valves opened
+/// record it
+fn bfs(dist: &HashMap<String, HashMap<String, i32>>, valves: &HashMap<String, Valve>) -> i32 {
     // [open valves]: pressure
     let mut results = HashMap::new();
     let mut queue = VecDeque::new();
@@ -106,16 +106,41 @@ fn bfs(dist: &HashMap<String, HashMap<String, i32>>, valves: &HashMap<String, Va
     queue.push_back(State {
         pos: "AA".into(),
         time: 30,
-        opened: 0,
-        pressure: 0,
+        opened: HashSet::new(),
+        released: 0,
     });
 
-    loop {
-        let Some(top) = queue.pop_front() else {
-            break;
-        };
+    while let Some(state) = queue.pop_front() {
+        // everyone is a winner!
+        // as long as set biggest released for each # of steps
+        results
+            .entry(state.opened.len())
+            .and_modify(|current_best: &mut i32| {
+                *current_best = state.released.max(*current_best);
+            })
+            .or_insert(state.released);
 
-        let valve = &valves[&top.pos];
-        for tunnel in &valve.tunnels {}
+        let tunnels = &dist[&state.pos];
+        for (next_pos, dist) in tunnels {
+            if state.opened.contains(next_pos) {
+                continue;
+            }
+
+            let new_time = state.time - dist - 1; // 1 minute to open valve
+            if new_time >= 0 {
+                let released = valves[next_pos].flow * new_time;
+                let mut opened = state.opened.clone();
+                opened.insert(next_pos.to_string());
+
+                queue.push_back(State {
+                    pos: next_pos.to_string(),
+                    time: new_time,
+                    opened,
+                    released: state.released + released,
+                });
+            }
+        }
     }
+
+    *results.values().max().unwrap()
 }
