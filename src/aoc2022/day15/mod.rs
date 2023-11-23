@@ -2,8 +2,6 @@ use std::collections::{HashMap, HashSet};
 
 use crate::read;
 
-// 9104091519600n
-
 const DEBUG: bool = false;
 const ROW: i32 = if DEBUG { 10 } else { 2_000_000 };
 const MAXY: i32 = if DEBUG { 20 } else { 4_000_000 };
@@ -29,39 +27,13 @@ pub fn run() {
         })
         .collect();
 
-    /*
-    let mut ranges = Vec::new();
-    for (&sens, &beac) in &objects {
-        if let Some(range) = row_used(ROW, sens, beac) {
-            ranges.push(range);
-        }
-    }
-
-    ranges.sort_by(|a, b| a.0.cmp(&b.0));
-
-    let mut new_ranges = Vec::new();
-    for range in ranges {
-        let mut found = false;
-
-        for nrange in new_ranges.iter_mut() {
-            if intersect(range, *nrange) {
-                *nrange = merge(range, *nrange);
-                found = true;
-                break;
-            }
-        }
-
-        if !found {
-            new_ranges.push(range);
-        }
-    }
-    */
     let range = find_ranges(ROW, &objects);
 
     // there *may* be a chance where the length isn't 1, and may possibly be 2
+    // in that case, use this code:
+    // let sum: i32 = new_ranges.into_iter().map(|(a, b)| b - a).sum();
     assert_eq!(range.len(), 1);
     let sum = range[0].1 - range[0].0;
-    // let sum: i32 = new_ranges.into_iter().map(|(a, b)| b - a).sum();
 
     println!("Part1: {}", sum);
 

@@ -62,30 +62,47 @@ pub fn run() {
         bfs(&dist, &valves).values().max().copied().unwrap()
     );
 
-    let things = bfs2(&dist, &valves);
-
-    // remove intersecting paths
-    let mut things: Vec<(&i32, &HashSet<String>, &i32, &HashSet<String>)> = things
-        .iter()
-        .flat_map(|(pressure1, path)| {
-            things
-                .iter()
-                .filter_map(|(pressure2, path2)| {
-                    if path.is_disjoint(&path2) {
-                        Some((pressure1, path, pressure2, path2))
-                    } else {
-                        None
-                    }
-                })
-                .collect::<Vec<_>>()
-        })
-        .collect();
-    things.sort_by(|(a, _, b, _), (c, _, d, _)| (*a + *b).cmp(&(*c + *d)));
-    println!("{:?}", &things[things.len() - 2..things.len()]);
-
     // since we already have all the paths
     // just choose the top 2 that don't intersect
-    // println!("Part2: {}");
+
+    // not even my code anymore :(
+    let mut nonempty = Vec::new();
+    for (name, valve) in &valves {
+        if valve.flow > 0 {
+            nonempty.push(name.as_str());
+        }
+    }
+
+    let nonemptylen = nonempty.len();
+
+    let indices: HashMap<String, usize> = nonempty
+        .iter()
+        .enumerate()
+        .map(|(i, n)| (n.to_string(), i))
+        .collect();
+
+    let mut cache = HashMap::new();
+
+    // all tunnels: 111 ...
+    let all = (1 << nonemptylen) - 1;
+
+    let mut max = 0;
+
+    // 0001, 00010, 000011 ... to 10000
+    // highest + 1 / 2 == 100 ...
+    for i in 0..((all + 1) / 2) {
+        // ^ means exclusive or
+        // which is basically set subtraction
+        // 11111 ^
+        // 00101 =
+        // 11010
+        max = max.max(
+            dfs(26, "AA", i, &valves, &dist, &indices, &mut cache)
+                + dfs(26, "AA", all ^ i, &valves, &dist, &indices, &mut cache),
+        )
+    }
+
+    println!("Part2: {max}");
 }
 
 /// shortest dist to every other nonbroken valve
@@ -180,47 +197,56 @@ fn bfs(
     results
 }
 
-fn bfs2(
-    dist: &HashMap<String, HashMap<String, i32>>,
+/// Using bits, we can treat them as `HashSet`'s.
+/// Use | to append:
+/// ```txt
+/// 000000 |
+/// 000010 =
+/// 000010
+/// ```
+/// Use & to check intersection:
+/// ```txt
+/// 000100 &
+/// 001000 =
+/// 000000 (doesn't intersect)
+///
+/// 001001 &
+/// 010101 =
+/// 000001 (intersects)
+/// ```
+///
+/// The cache is:
+/// `[(time, valve, opened)] = max pressure`
+fn dfs(
+    time: i32,
+    name: &str,
+    opened: i32,
     valves: &HashMap<String, Valve>,
-) -> Vec<(i32, HashSet<String>)> {
-    // [open valves]: pressure
-    let mut results = Vec::new();
-    let mut queue = VecDeque::new();
+    dists: &HashMap<String, HashMap<String, i32>>,
+    indices: &HashMap<String, usize>,
+    cache: &mut HashMap<(i32, String, i32), i32>,
+) -> i32 {
+    if let Some(&pressure) = cache.get(&(time, name.to_string(), opened)) {
+        pressure
+    } else {
+        let mut max = 0;
 
-    queue.push_back(State {
-        pos: "AA".into(),
-        time: 30,
-        opened: HashSet::new(),
-        released: 0,
-    });
-
-    while let Some(state) = queue.pop_front() {
-        // everyone is a winner!
-        // as long as set biggest released for each # of steps
-        results.push((state.released, state.opened.clone()));
-
-        let tunnels = &dist[&state.pos];
-        for (next_pos, dist) in tunnels {
-            if state.opened.contains(next_pos) {
+        for (next, dist) in &dists[name] {
+            let pressure = valves[next].flow;
+            let remtime = time - dist - 1;
+            let bit = 1 << indices[next];
+            if opened & bit != 0 || remtime <= 0 {
                 continue;
             }
 
-            let new_time = state.time - dist - 1; // 1 minute to open valve
-            if new_time >= 0 {
-                let released = valves[next_pos].flow * new_time;
-                let mut opened = state.opened.clone();
-                opened.insert(next_pos.to_string());
-
-                queue.push_back(State {
-                    pos: next_pos.to_string(),
-                    time: new_time,
-                    opened,
-                    released: state.released + released,
-                });
-            }
+            max = max.max(
+                dfs(remtime, &next, opened | bit, valves, dists, indices, cache)
+                    + pressure * remtime,
+            );
         }
-    }
 
-    results
+        cache.insert((time, name.to_string(), opened), max);
+
+        max
+    }
 }
