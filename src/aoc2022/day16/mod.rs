@@ -83,13 +83,14 @@ pub fn run() {
 
     let mut cache = HashMap::new();
 
-    // all tunnels: 111 ...
+    // all tunnels opened 1111
     let all = (1 << nonemptylen) - 1;
 
     let mut max = 0;
 
-    // 0001, 00010, 000011 ... to 10000
-    // highest + 1 / 2 == 100 ...
+    // 0001, 0010, 0011 ... to 1000
+    // 1001 ^ 1111 == 0110 (which we already reached)
+    // highest + 1 / 2 == 1000
     for i in 0..((all + 1) / 2) {
         // ^ means exclusive or
         // which is basically set subtraction
