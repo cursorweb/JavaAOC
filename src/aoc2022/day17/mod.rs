@@ -85,7 +85,7 @@ pub fn run() {
 
     let mut rock = create_rock(&mut rock_cycle, floor);
 
-    for i in 0..2023 {
+    for i in 0..1_000_000_000_000i64 {
         if i == 2022 {
             // floor starts at 0, but we want the height
             println!("Part1: {}", highest_y(&stones) + 1);
@@ -112,11 +112,14 @@ pub fn run() {
             should_fall = !should_fall;
         }
     }
+
+    println!("Part2: {}", highest_y(&stones) + 1);
 }
 
 fn _show_rock(rock: &Vec<(i64, i32)>, stones: &HashSet<(i64, i32)>) {
     let ceil = highest_y(rock);
-    for y in (0..=ceil).rev() {
+    let floor = lowest_y(ceil, stones);
+    for y in (floor..=ceil).rev() {
         for x in 0..7 {
             if stones.contains(&(y, x)) {
                 print!("#")
@@ -133,7 +136,8 @@ fn _show_rock(rock: &Vec<(i64, i32)>, stones: &HashSet<(i64, i32)>) {
 
 fn _dot(stones: &HashSet<(i64, i32)>) {
     let ceil = highest_y(stones);
-    for y in (0..=ceil).rev() {
+    let floor = lowest_y(ceil, stones);
+    for y in (floor..=ceil).rev() {
         for x in 0..7 {
             if stones.contains(&(y, x)) {
                 print!("#")
@@ -179,9 +183,42 @@ fn fall(
     Ok(rock.into_iter().map(|(y, x)| (y - 1, x)).collect())
 }
 
-fn highest_y<'a, T>(rock: T) -> i64
+fn optimize(stones: &mut HashSet<(i64, i32)>) {
+    let ceil = highest_y(&*stones);
+    let lowest_y = lowest_y(ceil, &*stones);
+
+    let val = stones
+        .iter()
+        .filter(|(y, _)| *y >= lowest_y)
+        .copied()
+        .collect();
+    *stones = val;
+}
+
+fn highest_y<'a, T>(rocks: T) -> i64
 where
     T: IntoIterator<Item = &'a (i64, i32)>,
 {
-    rock.into_iter().map(|(y, _)| *y).max().unwrap()
+    rocks.into_iter().map(|(y, _)| *y).max().unwrap()
+}
+
+fn lowest_y(ceil: i64, stones: &HashSet<(i64, i32)>) -> i64 {
+    let mut lowest_y = i64::MAX;
+    for x in 0..7 {
+        let mut y = ceil;
+        while y > 0 {
+            if stones.contains(&(y, x)) {
+                lowest_y = lowest_y.min(y);
+                break;
+            }
+
+            y -= 1;
+        }
+
+        if y == 0 {
+            return 0;
+        }
+    }
+
+    lowest_y
 }
