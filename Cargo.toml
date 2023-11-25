@@ -12,3 +12,4 @@ name = "create"
 path = "bin/create.rs"
 
 [dependencies]
+itertools = "0.12.0"
