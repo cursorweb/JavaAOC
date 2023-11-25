@@ -152,9 +152,9 @@ impl ExpanderState {
 
     fn _expand(&mut self, point: Point, path: &mut HashSet<Point>) -> bool {
         if self.cache.contains_key(&point) {
-            // it should ALWAYS be out of bounds
-            // why not?
-            // assert!(!self.cache[&point]);
+            // it is either
+            // - out of bounds
+            // - another point in an existing (found) air pocket
             return self.cache[&point];
         }
 
@@ -170,7 +170,6 @@ impl ExpanderState {
         }
 
         path.insert(point);
-        // std::io::stdin().read_line(&mut String::new()).unwrap();
 
         for adj in adjacent(point) {
             // can't go into a cube, and can't go back
