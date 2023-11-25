@@ -157,9 +157,14 @@ pub fn run() {
             curr_height = height;
             rest_height = height + products * amt;
 
-            break;
+            // guarantee i == 2022 once
+            // this way I don't have to change part 1 code
+            if i > 2022 {
+                break;
+            }
         }
 
+        // add to pattern recognizer cache
         if i > LOOK_BEHIND {
             cache.insert(dotstring(&stones), (i, highest_y(&stones) + 1));
         }
@@ -188,7 +193,7 @@ pub fn run() {
         }
     }
 
-    // (max_height + 1) - (max + 1) + (max + 1) - 1
+    // (max_stone_y + 1) - (max + 1) + (max + 1) - 1
     println!("Part2: {}", highest_y(&stones) - curr_height + rest_height);
 }
 
