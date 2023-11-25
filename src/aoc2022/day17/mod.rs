@@ -1,4 +1,20 @@
-use std::{collections::HashSet, iter::Cycle, vec::IntoIter};
+/*
+1984 1247 1247
+     |||| ---- is the same as
+     ----     this
+How are they the same? The last slice = this slice
+Find that, and then, the max height will be: the repetition
+and then a little more
+*/
+use std::{
+    collections::{HashMap, HashSet},
+    iter::Cycle,
+    vec::IntoIter,
+};
+
+/// how much to store in our pattern checker
+const LOOK_BEHIND: i64 = 40i64;
+const TOTAL_STACK: i64 = 1_000_000_000_000;
 
 use crate::read;
 
@@ -85,7 +101,18 @@ pub fn run() {
 
     let mut rock = create_rock(&mut rock_cycle, floor);
 
-    for i in 0..1_000_000_000_000i64 {
+    // last N : (iter number, height)
+    let mut cache: HashMap<String, (i64, i64)> = HashMap::new();
+
+    let mut remaining = 0;
+    // as after the prelim pattern checking loop
+    // you need to subtract all that height
+    // to get the true 'remainder' delta
+    let mut curr_height = 0;
+    let mut rest_height = 0;
+
+    for i in 0..LOOK_BEHIND * 100 {
+        // just hope 2022 was in it LMAO
         if i == 2022 {
             // floor starts at 0, but we want the height
             println!("Part1: {}", highest_y(&stones) + 1);
@@ -111,15 +138,63 @@ pub fn run() {
             }
             should_fall = !should_fall;
         }
+
+        if cache.contains_key(&dotstring(&stones)) {
+            // last N : (iter number, height)
+            let val = cache[&dotstring(&stones)];
+            let height = highest_y(&stones) + 1;
+
+            // how many more iterations to go
+            let rest = TOTAL_STACK - i;
+            // how long the iteration lasts
+            let skip = i - val.0;
+            // how long the pattern repeats
+            let products = rest / skip;
+            // how much the height increases
+            let amt = height - val.1;
+
+            remaining = rest % skip;
+            curr_height = height;
+            rest_height = height + products * amt;
+
+            break;
+        }
+
+        if i > LOOK_BEHIND {
+            cache.insert(dotstring(&stones), (i, highest_y(&stones) + 1));
+        }
     }
 
-    println!("Part2: {}", highest_y(&stones) + 1);
+    for _ in 0..remaining {
+        let mut should_fall = false;
+        loop {
+            if !should_fall {
+                let dir = push_cycle.next().unwrap();
+                rock = push_by(rock, &stones, dir);
+            } else {
+                match fall(rock, floor, &stones) {
+                    Ok(r) => rock = r,
+                    Err(r) => {
+                        // the highest y is the highest of the stone
+                        // so add 1 = the floor
+                        floor = floor.max(highest_y(&r) + 1);
+                        stones.extend(r);
+                        rock = create_rock(&mut rock_cycle, floor);
+                        break;
+                    }
+                };
+            }
+            should_fall = !should_fall;
+        }
+    }
+
+    // (max_height + 1) - (max + 1) + (max + 1) - 1
+    println!("Part2: {}", highest_y(&stones) - curr_height + rest_height);
 }
 
 fn _show_rock(rock: &Vec<(i64, i32)>, stones: &HashSet<(i64, i32)>) {
     let ceil = highest_y(rock);
-    let floor = lowest_y(ceil, stones);
-    for y in (floor..=ceil).rev() {
+    for y in (0..=ceil).rev() {
         for x in 0..7 {
             if stones.contains(&(y, x)) {
                 print!("#")
@@ -136,8 +211,7 @@ fn _show_rock(rock: &Vec<(i64, i32)>, stones: &HashSet<(i64, i32)>) {
 
 fn _dot(stones: &HashSet<(i64, i32)>) {
     let ceil = highest_y(stones);
-    let floor = lowest_y(ceil, stones);
-    for y in (floor..=ceil).rev() {
+    for y in (0..=ceil).rev() {
         for x in 0..7 {
             if stones.contains(&(y, x)) {
                 print!("#")
@@ -148,6 +222,23 @@ fn _dot(stones: &HashSet<(i64, i32)>) {
         println!()
     }
     println!()
+}
+
+/// dot actually becomes not debugging?! :O
+fn dotstring(stones: &HashSet<(i64, i32)>) -> String {
+    let mut out = String::new();
+    let ceil = highest_y(stones);
+    for y in (ceil - LOOK_BEHIND..=ceil).rev() {
+        for x in 0..7 {
+            if stones.contains(&(y, x)) {
+                out += "#";
+            } else {
+                out += ".";
+            }
+        }
+        out += "\n";
+    }
+    out
 }
 
 fn create_rock(rock: &mut Cycle<IntoIter<Vec<(i64, i32)>>>, floor: i64) -> Vec<(i64, i32)> {
@@ -183,42 +274,9 @@ fn fall(
     Ok(rock.into_iter().map(|(y, x)| (y - 1, x)).collect())
 }
 
-fn optimize(stones: &mut HashSet<(i64, i32)>) {
-    let ceil = highest_y(&*stones);
-    let lowest_y = lowest_y(ceil, &*stones);
-
-    let val = stones
-        .iter()
-        .filter(|(y, _)| *y >= lowest_y)
-        .copied()
-        .collect();
-    *stones = val;
-}
-
 fn highest_y<'a, T>(rocks: T) -> i64
 where
     T: IntoIterator<Item = &'a (i64, i32)>,
 {
     rocks.into_iter().map(|(y, _)| *y).max().unwrap()
-}
-
-fn lowest_y(ceil: i64, stones: &HashSet<(i64, i32)>) -> i64 {
-    let mut lowest_y = i64::MAX;
-    for x in 0..7 {
-        let mut y = ceil;
-        while y > 0 {
-            if stones.contains(&(y, x)) {
-                lowest_y = lowest_y.min(y);
-                break;
-            }
-
-            y -= 1;
-        }
-
-        if y == 0 {
-            return 0;
-        }
-    }
-
-    lowest_y
 }
