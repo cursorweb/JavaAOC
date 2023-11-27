@@ -45,3 +45,15 @@ pub fn name_to_dirs_dbg(name: &str) -> (i32, i32) {
         _ => unreachable!(),
     }
 }
+
+/// enter as step debugging
+#[macro_export]
+macro_rules! input {
+    () => {
+        use std::io::{stdin, stdout, Write};
+
+        print!(">>> {}:{}:{} : ", file!(), line!(), column!());
+        stdout().flush().unwrap();
+        stdin().read_line(&mut String::new()).unwrap();
+    };
+}
