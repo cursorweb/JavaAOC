@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::collections::{HashSet, VecDeque};
 
 use crate::read;
 
@@ -14,8 +14,8 @@ struct Blueprint {
     /// ```
     recipes: [[i32; 3]; 4],
 
-    /// You can only make 1 robot per minute
-    /// this tells you max of each robot that should be made
+    /// You can only make 1 robot per minute, so the max bots
+    /// would be the max cost for each resource
     /// (no max for the geodes, duh)
     max: [i32; 4],
 }
@@ -67,22 +67,12 @@ pub fn run() {
     let out: i32 = blueprints
         .iter()
         .enumerate()
-        .map(|(i, &bp)| {
-            let mut cache = HashMap::new();
-            (i + 1) as i32 * dfs(bp, State::new(24), &mut cache)
-        })
+        .map(|(i, &bp)| (i + 1) as i32 * bfs(bp, 24))
         .sum();
 
     println!("Part1: {out}");
 
-    let out: i32 = blueprints
-        .iter()
-        .take(3)
-        .map(|&bp| {
-            let mut cache = HashMap::new();
-            dfs(bp, State::new(32), &mut cache)
-        })
-        .product();
+    let out: i32 = blueprints.iter().take(3).map(|&bp| bfs(bp, 32)).product();
 
     println!("Part2: {out}");
 }
@@ -106,86 +96,101 @@ impl State {
     }
 }
 
-fn dfs(bp: Blueprint, state: State, cache: &mut HashMap<State, i32>) -> i32 {
-    let State {
+/// optimizations:
+/// - we only need to have max of [max cost] robots
+///     - we can only make 1 robot / minute after all
+/// - throw away extra ore
+///     - you can't even spend it anyways
+fn bfs(bp: Blueprint, time: i32) -> i32 {
+    let mut visited = HashSet::new();
+    let mut queue = VecDeque::new();
+
+    let state = State::new(time);
+
+    queue.push_back(state);
+    visited.insert(state);
+
+    let mut max = 0;
+
+    while let Some(State {
         bots,
         resources,
         time,
-    } = state;
+    }) = queue.pop_front()
+    {
+        // value if you don't do anything for the remainder
+        // of this state
+        max = max.max(resources[3] + bots[3] * time);
 
-    if time == 0 {
-        return resources[3];
-    }
-
-    if let Some(out) = cache.get(&state) {
-        return *out;
-    }
-
-    // value if you don't do anything
-    let mut max = resources[3] + bots[3] * time;
-
-    for (bot_kind, recipe) in bp.recipes.into_iter().enumerate() {
-        if bots[bot_kind] >= bp.max[bot_kind] {
-            // don't make extra bots
-            continue;
-        }
-
-        let mut wait_time = 0;
-        for (r_kind, amt) in recipe.into_iter().enumerate() {
-            if amt > 0 && bots[r_kind] == 0 {
-                // don't have enough to make this bot
-                wait_time = -1;
-                break;
-            }
-
-            let time = ((amt - resources[r_kind]) as f32 / bots[r_kind] as f32).ceil() as i32;
-            wait_time = wait_time.max(time);
-        }
-
-        if wait_time != -1 {
-            let elapsed = wait_time + 1; // takes 1 more minute to create the bot
-            let rem_time = time - elapsed;
-
-            if rem_time <= 0 {
-                // exceeds time limit to create the bot
-                // ignore
+        for (bot_kind, recipe) in bp.recipes.into_iter().enumerate() {
+            if bots[bot_kind] == bp.max[bot_kind] {
+                // don't make more bots than this point
+                // because you can't spend that much
                 continue;
             }
 
-            let mut bots = bots;
-            let mut resources = resources;
-
-            // all the bots produce resources during that time
-            for r_kind in 0..resources.len() {
-                resources[r_kind] += bots[r_kind] * elapsed;
-            }
-
-            // now take the costs
+            // time it takes to mine resources to make the bot
+            let mut wait_time = 0;
             for (r_kind, amt) in recipe.into_iter().enumerate() {
-                resources[r_kind] -= amt;
+                if amt > 0 && bots[r_kind] == 0 {
+                    // don't have enough (existing bots) to make this bot
+                    wait_time = -1;
+                    break;
+                }
+
+                let time = ((amt - resources[r_kind]) as f32 / bots[r_kind] as f32).ceil() as i32;
+                wait_time = wait_time.max(time);
             }
 
-            bots[bot_kind] += 1;
+            if wait_time != -1 {
+                let elapsed = wait_time + 1; // takes 1 more minute to create the bot
+                let rem_time = time - elapsed;
 
-            for r_kind in 0..(bp.max.len() - 1) {
-                // throw away excess resources
-                // that you can't even use (because r_kind is how much you can purchase per minute)
-                resources[r_kind] = resources[r_kind].min(bp.max[r_kind] * rem_time);
-            }
+                if rem_time <= 0 {
+                    // exceeds time limit to create the bot
+                    // so you can't "jump" to the next state
+                    continue;
+                }
 
-            max = max.max(dfs(
-                bp,
-                State {
+                let mut bots = bots;
+                let mut resources = resources;
+
+                // bots produce resources during that time
+
+                for r_kind in 0..resources.len() {
+                    resources[r_kind] += bots[r_kind] * elapsed;
+                }
+
+                // take the costs to make the new bot
+                for (r_kind, amt) in recipe.into_iter().enumerate() {
+                    resources[r_kind] -= amt;
+                }
+
+                bots[bot_kind] += 1;
+
+                // OPTIMIZATION: throw away excess resources
+                // max_bots * rem_time would be how much you can produce and still use
+                // all resources efficiently
+                // this reduces the # of state
+                // since excess is essentially the same as ample
+                for r_kind in 0..(bp.max.len() - 1) {
+                    resources[r_kind] = resources[r_kind].min(bp.max[r_kind] * rem_time);
+                }
+
+                let state = State {
                     bots,
                     resources,
                     time: rem_time,
-                },
-                cache,
-            ));
+                };
+
+                if !visited.contains(&state) {
+                    visited.insert(state);
+                    queue.push_front(state);
+                }
+            }
         }
     }
 
-    cache.insert(state, max);
     max
 }
 
