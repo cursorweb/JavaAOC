@@ -1,4 +1,5 @@
 pub mod aoc2022;
+pub mod aoc2023;
 
 /// Read the `data.txt` relative to your current directory.
 ///
