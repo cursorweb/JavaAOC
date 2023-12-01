@@ -5,7 +5,7 @@ use std::{
     process,
 };
 
-const YEAR: i32 = 2022;
+const YEAR: i32 = 2023;
 
 struct Puzzle {
     day: i32,
