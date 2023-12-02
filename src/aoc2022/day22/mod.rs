@@ -3,17 +3,32 @@ use itertools::Itertools;
 use crate::read;
 
 /// Map Slice
+/// ```txt
+/// localx = x - offset
+/// realx = localx + offset
+/// next localx = realx - offset
+/// ```
+#[derive(Debug)]
 struct MSlice {
     offset: i32,
-    array: Vec<char>,
+    slice: Vec<char>,
 }
 
 pub fn run() {
     let file = read!(str);
     let (map, path) = file.split_once("\n\n").unwrap();
 
-    map.split("\n").map(|line| {
-        let chars = line.chars().collect_vec();
-        let mut offset = 0;
-    });
+    let map = map
+        .split("\n")
+        .map(|line| {
+            let line_len = line.len();
+            let path = line.trim_start();
+
+            let offset = (line_len - path.len()) as i32;
+
+            let slice = path.chars().collect_vec();
+
+            MSlice { offset, slice }
+        })
+        .collect_vec();
 }
