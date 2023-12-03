@@ -1,5 +1,6 @@
 {
     "files.eol": "\n",
     "rust-analyzer.inlayHints.chainingHints.enable": false,
-    "editor.formatOnSave": true
+    "editor.formatOnSave": true,
+    "rust-analyzer.showUnlinkedFileNotification": false
 }
