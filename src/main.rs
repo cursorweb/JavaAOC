@@ -1,5 +1,5 @@
-use aoc::aoc2023 as code;
+use aoc::aoc2022 as code;
 
 fn main() {
-    code::day3::run();
+    code::day22::run();
 }

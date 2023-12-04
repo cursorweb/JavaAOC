@@ -80,9 +80,8 @@ pub fn run() {
         for &(sy, sx) in &symbols {
             if (y - sy).abs() <= 1 && (sx <= x + number.len && sx >= x - 1) {
                 if gears.contains(&(sy, sx)) {
-                    let entry: &mut HashSet<i32> = gear_pairs
-                        .entry((sy, sx))
-                        .or_insert(HashSet::from_iter(vec![number.num]));
+                    let entry: &mut HashSet<i32> =
+                        gear_pairs.entry((sy, sx)).or_insert(HashSet::new());
                     entry.insert(number.num);
                 }
                 touch.push(number.num);

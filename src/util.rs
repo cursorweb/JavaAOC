@@ -44,6 +44,11 @@ pub fn name_to_dirs_dbg(name: &str) -> (i32, i32) {
     }
 }
 
+/// checks if two ranges intersect
+pub fn range_intersects(r1: (i32, i32), r2: (i32, i32)) -> bool {
+    return (r1.0 <= r2.1) && (r1.1 >= r2.0);
+}
+
 /// enter as step debugging
 #[macro_export]
 macro_rules! input {
