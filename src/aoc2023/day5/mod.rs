@@ -19,22 +19,16 @@ impl Mapper {
         }
     }
 
-    fn maps_down(&self) -> bool {
-        self.dest_start < self.source_start
+    /// map one number
+    fn imap(&self, num: i64) -> i64 {
+        self.dest_start + num - self.source_start
     }
 
-    /// (start, len)
-    fn map_range(&self, (start, len): (i64, i64)) -> Option<(i64, i64)> {
-        let start = start.clamp(self.source_start, self.source_start + self.len);
-        let end = (start + len).clamp(self.source_start, self.source_start + self.len);
-        let len = end - start;
-
-        if len == 0 {
-            None
-        } else {
-            let diff = self.source_start - self.dest_start;
-            Some((start - diff, len))
-        }
+    /// get the range intersection
+    fn overlap(&self, (range_start, range_end): (i64, i64)) -> (i64, i64) {
+        let start = range_start.max(self.source_start);
+        let end = range_end.min(self.source_start + self.len);
+        (start, end)
     }
 }
 
@@ -102,39 +96,73 @@ pub fn run() {
 
     println!("Part1: {lowest}");
 
-    /*
-    optimization:
-    - only go through the range that actually will optimize lower
-        - ignore if the range will optimize higher
-    - map the entire range, and take the lowest
-    */
     let mut seed_ranges = Vec::new();
     for i in (0..seeds.len()).step_by(2) {
-        seed_ranges.push((seeds[i], seeds[i + 1]));
+        seed_ranges.push((seeds[i], seeds[i] + seeds[i + 1]));
     }
 
-    let mut lowest = i64::MAX;
-    for range in seed_ranges {
-        for seed in range.0..range.0 + range.1 {
-            let mut loc_out = seed;
+    for mappers in maps {
+        let mut next_ranges = Vec::new();
+        while let Some((start, end)) = seed_ranges.pop() {
+            let mut mapped = false;
+            for mapper in &mappers {
+                let (o_start, o_end) = mapper.overlap((start, end));
 
-            // map it through the whole thing
-            for mappers in &maps {
-                let mut map_out = loc_out;
-                for mapper in mappers {
-                    if let Some(val) = mapper.map(map_out) {
-                        map_out = val;
-                        break;
+                // mapped range is nonempty, so must have some mapping
+                /*
+                don't check other ranges because they may duplicate
+                the split ranges:
+
+                LEGEND: = mapper, - range, ~ split range
+                |------------|
+                  |==|  |==|
+                |~|  |~~~~~~~| mapped 1
+                |~~~~~~~|  |~| mapped 2
+                */
+                if o_start < o_end {
+                    /*
+                    three cases:
+                    mapped?  no      yes       no
+                          |------|----------|------|
+                                 |==mapper==|
+                    */
+                    next_ranges.push((mapper.imap(o_start), mapper.imap(o_end)));
+
+                    /*
+                        |--|  overlap
+                    |~~~----- actual
+                     ^^^ must have some before it (which could be remapped)
+                    */
+                    if o_start > start {
+                        seed_ranges.push((start, o_start));
                     }
-                }
 
-                loc_out = map_out;
+                    /*
+                      |--|     overlap
+                    ------~~~| actual
+                          ^^^
+                    */
+                    if o_end < end {
+                        seed_ranges.push((o_end, end));
+                    }
+
+                    mapped = true;
+                    break;
+                }
             }
 
-            if loc_out < lowest {
-                lowest = loc_out;
+            // there is a chance that none of the mappers
+            // will map the range
+            if !mapped {
+                next_ranges.push((start, end));
             }
         }
+
+        // newly mapped
+        seed_ranges = next_ranges;
     }
-    println!("Part2: {lowest}");
+
+    seed_ranges.sort_by(|(start1, _), (start2, _)| start1.cmp(start2));
+
+    println!("Part2: {}", seed_ranges[0].0);
 }
