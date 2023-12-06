@@ -18,6 +18,18 @@ impl Mapper {
             None
         }
     }
+
+    /// map one number
+    fn imap(&self, num: i64) -> i64 {
+        self.dest_start + num - self.source_start
+    }
+
+    /// get the range intersection
+    fn overlap(&self, (range_start, range_end): (i64, i64)) -> (i64, i64) {
+        let start = range_start.max(self.source_start);
+        let end = range_end.min(self.source_start + self.len);
+        (start, end)
+    }
 }
 
 pub fn run() {
