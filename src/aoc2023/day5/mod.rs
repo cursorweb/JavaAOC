@@ -18,24 +18,6 @@ impl Mapper {
             None
         }
     }
-
-    fn maps_down(&self) -> bool {
-        self.dest_start < self.source_start
-    }
-
-    /// (start, len)
-    fn map_range(&self, (start, len): (i64, i64)) -> Option<(i64, i64)> {
-        let start = start.clamp(self.source_start, self.source_start + self.len);
-        let end = (start + len).clamp(self.source_start, self.source_start + self.len);
-        let len = end - start;
-
-        if len == 0 {
-            None
-        } else {
-            let diff = self.source_start - self.dest_start;
-            Some((start - diff, len))
-        }
-    }
 }
 
 pub fn run() {
