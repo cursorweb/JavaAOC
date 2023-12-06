@@ -41,7 +41,7 @@ pub fn run() {
         prod *= count;
     }
 
-    println!("{prod}");
+    println!("Part1: {prod}");
 
     let time: i64 = times
         .into_iter()
@@ -68,5 +68,5 @@ pub fn run() {
         }
     }
 
-    println!("{count}");
+    println!("Part2: {count}");
 }
