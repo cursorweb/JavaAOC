@@ -61,21 +61,7 @@ pub fn run() {
         .into_iter()
         .map(|(hand, bid)| {
             let hand = hand.chars().map(|x| score1[&x]).collect_vec();
-            let hand_type = if five_kind(&hand) {
-                Five
-            } else if four_kind(&hand) {
-                Four
-            } else if full_house(&hand) {
-                Full
-            } else if three_kind(&hand) {
-                Three
-            } else if two_pair(&hand) {
-                Two
-            } else if one_pair(&hand) {
-                One
-            } else {
-                High
-            };
+            let hand_type = get_kind(&hand);
 
             (hand, hand_type, bid)
         })
@@ -118,21 +104,7 @@ pub fn run() {
         .into_iter()
         .map(|(hand, bid)| {
             let hand = hand.chars().map(|x| score2[&x]).collect_vec();
-            let hand_type = if j_five_kind(&hand) {
-                Five
-            } else if j_four_kind(&hand) {
-                Four
-            } else if j_full_house(&hand) {
-                Full
-            } else if j_three_kind(&hand) {
-                Three
-            } else if j_two_pair(&hand) {
-                Two
-            } else if j_one_pair(&hand) {
-                One
-            } else {
-                High
-            };
+            let hand_type = j_kind(&hand);
 
             (hand, hand_type, bid)
         })
@@ -168,6 +140,7 @@ pub fn run() {
         .map(|(i, (_, _, bid))| (i + 1) as i32 * bid)
         .sum();
 
+    // 35150181
     println!("Part2: {winnings}");
 }
 
@@ -235,11 +208,59 @@ fn has_joker(x: &Vec<i32>) -> bool {
     x.contains(&0)
 }
 
+fn j_kind(x: &Vec<i32>) -> Kind {
+    // it's all jokers
+    if five_kind(x) {
+        return Five;
+    }
+
+    if !has_joker(x) {
+        get_kind(x)
+    } else {
+        let mut counts = get_counts(x);
+        let jokers = counts.remove(&0).unwrap();
+        let no_joke = x.clone().iter().copied().filter(|&x| x != 0).collect_vec();
+        let mut max = High;
+        // in ord, High is the biggest
+        for &val in counts.keys() {
+            let mut new_vec = no_joke.clone();
+            new_vec.extend(std::iter::repeat(val).take(jokers as usize));
+            if new_vec.len() == 5 {
+                let val = get_kind(&new_vec);
+                if val < max {
+                    max = val;
+                }
+            }
+        }
+
+        assert_ne!(max, High);
+        max
+    }
+}
+
+fn get_kind(hand: &Vec<i32>) -> Kind {
+    if five_kind(&hand) {
+        Five
+    } else if four_kind(&hand) {
+        Four
+    } else if full_house(&hand) {
+        Full
+    } else if three_kind(&hand) {
+        Three
+    } else if two_pair(&hand) {
+        Two
+    } else if one_pair(&hand) {
+        One
+    } else {
+        High
+    }
+}
+
 /// JXXXX
 /// JJXXX
 /// JJJXX
 /// JJJJX
-fn j_five_kind(x: &Vec<i32>) -> bool {
+fn _j_five_kind(x: &Vec<i32>) -> bool {
     if five_kind(x) {
         true
     } else if has_joker(x) {
@@ -256,7 +277,7 @@ fn j_five_kind(x: &Vec<i32>) -> bool {
 ///
 /// but not
 /// YJXXY
-fn j_four_kind(x: &Vec<i32>) -> bool {
+fn _j_four_kind(x: &Vec<i32>) -> bool {
     if four_kind(x) {
         true
     } else if has_joker(x) {
@@ -271,7 +292,7 @@ fn j_four_kind(x: &Vec<i32>) -> bool {
 /// YXJJY
 /// YXXJY
 /// JXXXY
-fn j_full_house(x: &Vec<i32>) -> bool {
+fn _j_full_house(x: &Vec<i32>) -> bool {
     if full_house(x) {
         true
     } else if has_joker(x) {
@@ -288,7 +309,7 @@ fn j_full_house(x: &Vec<i32>) -> bool {
 
 /// YXXJZ
 /// YXJJZ
-fn j_three_kind(x: &Vec<i32>) -> bool {
+fn _j_three_kind(x: &Vec<i32>) -> bool {
     if three_kind(x) {
         true
     } else if has_joker(x) {
@@ -302,7 +323,7 @@ fn j_three_kind(x: &Vec<i32>) -> bool {
 
 /// XJYYZ
 /// XXYJZ
-fn j_two_pair(x: &Vec<i32>) -> bool {
+fn _j_two_pair(x: &Vec<i32>) -> bool {
     if two_pair(x) {
         true
     } else if has_joker(x) {
@@ -315,7 +336,7 @@ fn j_two_pair(x: &Vec<i32>) -> bool {
 }
 
 // XYZWJ
-fn j_one_pair(x: &Vec<i32>) -> bool {
+fn _j_one_pair(x: &Vec<i32>) -> bool {
     if one_pair(x) {
         true
     } else if has_joker(x) {
