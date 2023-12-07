@@ -1,5 +1,5 @@
 use aoc::aoc2023 as code;
 
 fn main() {
-    code::day6::run();
+    code::day7::run();
 }
