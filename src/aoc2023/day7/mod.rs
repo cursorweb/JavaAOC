@@ -67,35 +67,9 @@ pub fn run() {
         })
         .collect_vec();
 
-    games1.sort_by(|(hand1, hand_type1, _), (hand2, hand_type2, _)| {
-        match hand_type2.cmp(&hand_type1) {
-            Ordering::Less => Ordering::Less,
-            Ordering::Equal => {
-                assert_eq!(5, hand1.len());
-                let mut out = Ordering::Equal;
-                for i in 0..5 {
-                    let val1 = hand1[i];
-                    let val2 = hand2[i];
+    sort_games(&mut games1);
 
-                    if val1 != val2 {
-                        // want a number...? idk
-                        out = val1.cmp(&val2);
-                        break;
-                    }
-                }
-
-                assert_ne!(out, Ordering::Equal);
-                out
-            }
-            Ordering::Greater => Ordering::Greater,
-        }
-    });
-
-    let winnings: i32 = games1
-        .into_iter()
-        .enumerate()
-        .map(|(i, (_, _, bid))| (i + 1) as i32 * bid)
-        .sum();
+    let winnings = perfect_game(games1);
 
     println!("Part1: {winnings}");
 
@@ -110,9 +84,19 @@ pub fn run() {
         })
         .collect_vec();
 
-    games2.sort_by(|(hand1, hand_type1, _), (hand2, hand_type2, _)| {
-        match hand_type2.cmp(&hand_type1) {
-            Ordering::Less => Ordering::Less,
+    sort_games(&mut games2);
+
+    let winnings = perfect_game(games2);
+
+    println!("Part2: {winnings}");
+}
+
+fn sort_games(games: &mut Vec<(Vec<i32>, Kind, i32)>) {
+    games.sort_by(|(hand1, hand_type1, _), (hand2, hand_type2, _)| {
+        // High is the biggest, so we need to reverse order
+        // confusing stuff...
+        match hand_type1.cmp(&hand_type2) {
+            Ordering::Less => Ordering::Greater,
             Ordering::Equal => {
                 assert_eq!(5, hand1.len());
                 let mut out = Ordering::Equal;
@@ -121,7 +105,6 @@ pub fn run() {
                     let val2 = hand2[i];
 
                     if val1 != val2 {
-                        // want a number...? idk
                         out = val1.cmp(&val2);
                         break;
                     }
@@ -130,18 +113,16 @@ pub fn run() {
                 assert_ne!(out, Ordering::Equal);
                 out
             }
-            Ordering::Greater => Ordering::Greater,
+            Ordering::Greater => Ordering::Less,
         }
     });
+}
 
-    let winnings: i32 = games2
-        .into_iter()
+fn perfect_game(game: Vec<(Vec<i32>, Kind, i32)>) -> i32 {
+    game.into_iter()
         .enumerate()
         .map(|(i, (_, _, bid))| (i + 1) as i32 * bid)
-        .sum();
-
-    // 35150181
-    println!("Part2: {winnings}");
+        .sum()
 }
 
 fn five_kind(x: &Vec<i32>) -> bool {
