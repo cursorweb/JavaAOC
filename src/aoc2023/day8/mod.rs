@@ -23,7 +23,6 @@ pub fn run() {
         })
         .collect();
 
-    /*
     let mut instrs = instr_str.clone().chars().cycle();
     let mut curr = "AAA";
     let mut count = 0;
@@ -40,8 +39,7 @@ pub fn run() {
         }
     }
 
-    println!("{count}");
-    */
+    println!("Part1: {count}");
 
     let mut instrs = instr_str.chars().cycle();
 
@@ -95,7 +93,7 @@ pub fn run() {
         }
     }
 
-    println!("{}", finished.values().fold(1, |p, c| lcm(p, c.1)));
+    println!("Part2: {}", finished.values().fold(1, |p, c| lcm(p, c.1)));
 }
 
 fn lcm(first: i64, second: i64) -> i64 {
