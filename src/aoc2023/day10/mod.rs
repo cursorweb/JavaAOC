@@ -1,6 +1,6 @@
 use std::collections::{HashMap, HashSet, VecDeque};
 
-use crate::read;
+use crate::{read, DIRS};
 
 /*
 | is a vertical pipe connecting north and south.
@@ -17,7 +17,7 @@ enum Kind {
     /// |
     Vert,
 
-    /// -
+    /// `-`
     Horiz,
 
     /// L
@@ -71,7 +71,7 @@ pub fn run() {
         .collect_vec();
 
     let mut solver = MapSolver {
-        map,
+        map: map.clone(),
         queue: VecDeque::new(),
         visited: HashSet::new(),
         max: 0,
@@ -85,7 +85,13 @@ pub fn run() {
         ]),
     };
 
-    println!("{}", solver.bfs(start));
+    let (count, rloop) = solver.bfs(start);
+
+    println!("Part1: {}", count);
+
+    let mut filler = MapFiller::new(map, rloop, start);
+
+    println!("Part2: {}", filler.fill());
 }
 
 #[derive(Clone, Copy, Debug, Eq)]
@@ -165,7 +171,7 @@ impl MapSolver {
         }
     }
 
-    fn bfs(&mut self, (sy, sx): (i32, i32)) -> i32 {
+    fn bfs(&mut self, (sy, sx): (i32, i32)) -> (i32, HashSet<(i32, i32)>) {
         // up
         if let Some(kind) = self.get(sy - 1, sx) {
             if kind == Vert || kind == UpRight || kind == UpLeft {
@@ -231,6 +237,213 @@ impl MapSolver {
             }
         }
 
-        self.max
+        (
+            self.max,
+            self.visited.iter().map(|state| state.pos).collect(),
+        )
+    }
+}
+
+struct MapFiller {
+    map: Vec<Vec<Kind>>,
+    maxx: i32,
+    maxy: i32,
+    /// all the points that are outside the loop
+    visited: HashSet<(i32, i32)>,
+    loop_perimeter: i32,
+}
+
+impl MapFiller {
+    fn _dot(map: &Vec<Vec<Kind>>, points: &HashSet<(i32, i32)>) {
+        for (cy, row) in map.iter().enumerate() {
+            for (cx, &col) in row.iter().enumerate() {
+                if points.contains(&(cy as i32, cx as i32)) {
+                    print!("#");
+                } else {
+                    print!(
+                        "{}",
+                        match col {
+                            Vert => "|",
+                            Horiz => "-",
+                            DownRight => "L",
+                            DownLeft => "J",
+                            UpLeft => "7",
+                            UpRight => "F",
+                            Ground => ".",
+                            Start => "S",
+                        }
+                    );
+                }
+            }
+            println!();
+        }
+        println!();
+    }
+
+    /// remap everything outside the loop to .
+    /// and upscale
+    fn remap(
+        mut map: Vec<Vec<Kind>>,
+        rloop: HashSet<(i32, i32)>,
+        (sy, sx): (i32, i32),
+    ) -> Vec<Vec<Kind>> {
+        let mut new_map = Vec::new();
+
+        macro_rules! get {
+            ($y:expr, $x:expr, $pattern:pat) => {
+                match map.get(($y) as usize) {
+                    Some(a) => match a.get(($x) as usize) {
+                        Some(v) => matches!(v, $pattern),
+                        _ => false,
+                    },
+                    _ => false,
+                }
+            };
+        }
+
+        map[sy as usize][sx as usize] = {
+            // up
+            let up = get!(sy - 1, sx, Vert | UpRight | UpLeft);
+
+            // right
+            let right = get!(sy, sx + 1, Horiz | DownLeft | UpLeft);
+
+            // down
+            let down = get!(sy + 1, sx, Vert | DownRight | DownLeft);
+
+            // left
+            let left = get!(sy, sx - 1, Vert | UpRight | DownRight);
+
+            match (up, right, down, left) {
+                (true, false, true, false) => Vert,
+                (false, true, false, true) => Horiz,
+                (true, true, false, false) => DownRight,
+                (true, false, false, true) => DownLeft,
+                (false, false, true, true) => UpLeft,
+                (false, true, true, false) => UpRight,
+                _ => unreachable!(
+                    "state (up, right, down, left) = {:?}",
+                    (up, right, down, left)
+                ),
+            }
+        };
+
+        // double the size
+        // that way, gaps are easier
+        // extend all that can be extended
+        // . -> .#
+        //      ##
+        for (y, row) in map.iter().enumerate() {
+            let mut row_up = Vec::new();
+            let mut row_down = Vec::new();
+            /*
+            |.  --  L-  J.  7.  F-  ..
+            |.  ..  ..  ..  |.  |.  ..
+            */
+            for (x, &kind) in row.iter().enumerate() {
+                if rloop.contains(&(y as i32, x as i32)) {
+                    match kind {
+                        Vert => {
+                            row_up.extend([Vert, Ground].iter());
+                            row_down.extend([Vert, Ground].iter());
+                        }
+                        Horiz => {
+                            row_up.extend([Horiz, Horiz].iter());
+                            row_down.extend([Ground, Ground].iter());
+                        }
+                        DownRight => {
+                            row_up.extend([DownRight, Horiz].iter());
+                            row_down.extend([Ground, Ground].iter());
+                        }
+                        DownLeft => {
+                            row_up.extend([DownLeft, Ground].iter());
+                            row_down.extend([Ground, Ground].iter());
+                        }
+                        UpLeft => {
+                            row_up.extend([UpLeft, Ground].iter());
+                            row_down.extend([Vert, Ground].iter());
+                        }
+                        UpRight => {
+                            row_up.extend([UpRight, Horiz].iter());
+                            row_down.extend([Vert, Ground].iter());
+                        }
+                        Ground => {
+                            row_up.extend([Ground, Ground].iter());
+                            row_down.extend([Ground, Ground].iter());
+                        }
+                        _ => unreachable!("skill issue lmao (don't start)"),
+                    }
+                } else {
+                    row_up.extend([Ground, Ground].iter());
+                    row_down.extend([Ground, Ground].iter());
+                }
+            }
+
+            new_map.push(row_up);
+            new_map.push(row_down);
+        }
+
+        new_map
+    }
+
+    fn new(map: Vec<Vec<Kind>>, rloop: HashSet<(i32, i32)>, start: (i32, i32)) -> Self {
+        // upscale, and then count only the top left corners
+        let peri = rloop.len();
+        let new_map = Self::remap(map, rloop, start);
+
+        // inclusive
+        let maxx = new_map[0].len() - 1;
+        let maxy = new_map.len() - 1;
+
+        Self {
+            map: new_map,
+            maxx: maxx as i32,
+            maxy: maxy as i32,
+            visited: HashSet::new(),
+            loop_perimeter: peri as i32,
+        }
+    }
+
+    fn fill(&mut self) -> i32 {
+        for y in 0..=self.maxy {
+            self._fill((y, 0));
+            self._fill((y, self.maxx));
+        }
+
+        ((self.maxx + 1) * (self.maxy + 1)) / 4
+            - self
+                .visited
+                .iter()
+                .filter(|(y, x)| y % 2 == 0 && x % 2 == 0)
+                .count() as i32
+            - self.loop_perimeter
+    }
+
+    fn _fill(&mut self, (y, x): (i32, i32)) {
+        if self.map[y as usize][x as usize] != Ground || self.visited.contains(&(y, x)) {
+            return;
+        }
+
+        let mut queue = VecDeque::new();
+
+        self.visited.insert((y, x));
+        queue.push_front((y, x));
+
+        while let Some((y, x)) = queue.pop_front() {
+            for (dy, dx) in DIRS {
+                let (ny, nx) = (y + dy, x + dx);
+                if !self.visited.contains(&(ny, nx))
+                    && ny >= 0
+                    && ny <= self.maxy
+                    && ny >= 0
+                    && nx <= self.maxx
+                    && nx >= 0
+                    && self.map[ny as usize][nx as usize] == Ground
+                {
+                    self.visited.insert((ny, nx));
+                    queue.push_front((ny, nx));
+                }
+            }
+        }
     }
 }
