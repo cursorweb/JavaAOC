@@ -11,5 +11,9 @@ default-run = "aoc"
 name = "create"
 path = "bin/create.rs"
 
+[[bin]]
+name = "lfify"
+path = "bin/lfify.rs"
+
 [dependencies]
 itertools = "0.12.0"

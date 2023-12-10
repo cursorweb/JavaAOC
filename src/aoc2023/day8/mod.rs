@@ -23,7 +23,7 @@ pub fn run() {
         })
         .collect();
 
-    let mut instrs = instr_str.clone().chars().cycle();
+    let mut instrs = instr_str.chars().cycle();
     let mut curr = "AAA";
     let mut count = 0;
     while let Some(instr) = instrs.next() {
