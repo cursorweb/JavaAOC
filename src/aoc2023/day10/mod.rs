@@ -87,7 +87,7 @@ pub fn run() {
 
     let (count, rloop) = solver.bfs(start);
 
-    println!("Part1: {}", count);
+    println!("Part1: {count}");
 
     let mut filler = MapFiller::new(map, rloop, start);
 
@@ -250,7 +250,7 @@ struct MapFiller {
     maxy: i32,
     /// all the points that are outside the loop
     visited: HashSet<(i32, i32)>,
-    loop_perimeter: i32,
+    loop_peri: i32,
 }
 
 impl MapFiller {
@@ -400,7 +400,7 @@ impl MapFiller {
             maxx: maxx as i32,
             maxy: maxy as i32,
             visited: HashSet::new(),
-            loop_perimeter: peri as i32,
+            loop_peri: peri as i32,
         }
     }
 
@@ -410,13 +410,32 @@ impl MapFiller {
             self._fill((y, self.maxx));
         }
 
-        ((self.maxx + 1) * (self.maxy + 1)) / 4
-            - self
-                .visited
-                .iter()
-                .filter(|(y, x)| y % 2 == 0 && x % 2 == 0)
-                .count() as i32
-            - self.loop_perimeter
+        /*
+        ..    ....
+        .. -> .... (factor of 4)
+              ....
+              ....
+        */
+        let downscale_area = ((self.maxx + 1) * (self.maxy + 1)) / 4;
+        let downsale_outside = self
+            .visited
+            .iter()
+            .filter(|(y, x)| y % 2 == 0 && x % 2 == 0)
+            .count() as i32;
+
+        /*
+        .....
+        .+-+.
+        .|*|.
+        .+-+.
+        .....
+
+        area = 25
+        perimeter = 8
+        outside = 16
+        */
+
+        downscale_area - downsale_outside - self.loop_peri
     }
 
     fn _fill(&mut self, (y, x): (i32, i32)) {
