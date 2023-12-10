@@ -1,6 +1,6 @@
 use std::collections::{HashMap, HashSet, VecDeque};
 
-use crate::{input, read};
+use crate::read;
 
 /*
 | is a vertical pipe connecting north and south.
@@ -80,6 +80,8 @@ pub fn run() {
             (Horiz, vec![(0, -1), (0, 1)]),
             (UpLeft, vec![(1, 0), (0, -1)]),
             (UpRight, vec![(1, 0), (0, 1)]),
+            (DownLeft, vec![(-1, 0), (0, -1)]),
+            (DownRight, vec![(-1, 0), (0, 1)]),
         ]),
     };
 
@@ -218,54 +220,14 @@ impl MapSolver {
 
         while let Some(state) = self.queue.pop_front() {
             let (y, x) = state.pos;
-            self._dot(y, x);
-            // input!();
-            for &(dy, dx) in &self.valid[&state.kind] {
+
+            let Some(valid) = self.valid.get(&state.kind) else {
+                assert_eq!(state.kind, Start);
+                continue;
+            };
+
+            for (dy, dx) in valid.clone() {
                 self.add((y, x), (dy, dx), state.dist);
-            }
-            match state.kind {
-                Vert => {
-                    for &(dy, dx) in &self.valid[&Vert] {
-                        self.add((y, x), (dy, dx), state.dist);
-                    }
-                }
-                Horiz => {
-                    self.add((y, x), (dy, dx), state.dist);
-                }
-                DownRight => {
-                    // |^   then: diry =  1
-                    // | <  if:   dirx = -1
-                    // +---
-                    //  v   if:   diry = 1
-                    //   >  then: dirx = 1
-                    self.add((y, x), (-state.dir.1, state.dir.0), state.dist);
-                }
-                DownLeft => {
-                    //   ^|  then: diry = -1
-                    //  > |  if:   dirx =  1
-                    // ---+
-                    //  v   if: diry =  1
-                    // <  then: dirx = -1
-                    self.add((y, x), (-state.dir.1, -state.dir.0), state.dist);
-                }
-                UpRight => {
-                    // ---+
-                    // | >   then: dirx =  1
-                    // |^    if:   diry = -1
-                    //  <   if:   dirx = -1
-                    // v  then:   diry =  1
-                    self.add((y, x), (-state.dir.1, -state.dir.0), state.dist);
-                }
-                UpLeft => {
-                    // ---+
-                    //  < |  then: dirx = -1
-                    //   ^|  if:   diry = -1
-                    // >   if:   dirx =  1
-                    //  v  then: diry =  1
-                    self.add((y, x), (state.dir.1, state.dir.0), state.dist);
-                }
-                Start => {} // no.
-                _ => unreachable!("skill issue lmao {:?}", state.kind),
             }
         }
 
