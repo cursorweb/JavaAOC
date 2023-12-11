@@ -1,16 +1,16 @@
-use std::collections::{HashSet, HashMap};
+use std::collections::{HashMap, HashSet};
 
 use itertools::Itertools;
 
-use crate::{read};
+use crate::read;
 
-const DELTA: i64 = 1_000_000;
+const DELTA1: i64 = 2;
+const DELTA2: i64 = 1_000_000;
 
 pub fn run() {
     let file = read!();
     let map = file.map(|line| line.chars().collect_vec()).collect_vec();
 
-    
     assert_eq!(map.len(), map[0].len());
     let mut x_gaps = HashSet::new();
     let mut y_gaps = HashSet::new();
@@ -29,27 +29,6 @@ pub fn run() {
         }
     }
 
-    /*
-
-    let mut new_map = map.clone();
-    for i in (0..map.len()).rev() {
-        let row = &map[i];
-        if is_empty(row) {
-            new_map.insert(i, row.clone());
-        }
-    }
-
-    // go through the x (which is still map.len)
-    for i in (0..map.len()).rev() {
-        let col = get_col(i, &map);
-        if is_empty(&col) {
-            for y in 0..new_map.len() {
-                new_map[y].insert(i, '.');
-            }
-        }
-    }
-    */
-
     let points = map
         .iter()
         .enumerate()
@@ -67,9 +46,7 @@ pub fn run() {
         })
         .collect_vec();
 
-    // let mut dist1 = 0;
-
-        let mut visited = HashMap::new();
+    let mut visited = HashMap::new();
 
     // go dir, and then count the number of empty whatevers
     // then multiply by 1 million
@@ -79,36 +56,58 @@ pub fn run() {
                 continue;
             }
 
-            let diry = (oy - py).signum();
-            let mut y = py;
-            let mut disty = 0;
-            while y != oy {
-                disty += 1;
-                if y_gaps.contains(&(y as usize)) {
-                    disty += DELTA - 1;
-                }
-                y += diry;
+            if visited.contains_key(&((py, px), (oy, ox)))
+                || visited.contains_key(&((oy, ox), (py, px)))
+            {
+                continue;
             }
 
+            let diry = (oy - py).signum();
             let dirx = (ox - px).signum();
+
+            let mut y = py;
             let mut x = px;
-            let mut distx = 0;
-            while x != ox {
-                distx += 1;
-                if x_gaps.contains(&(x as usize)) {
-                    distx += DELTA - 1; // don't count prev
+
+            // for the different parts
+            let mut dy1 = 0;
+            let mut dy2 = 0;
+
+            let mut dx1 = 0;
+            let mut dx2 = 0;
+
+            // base distance
+            let mut bdx = 0;
+            let mut bdy = 0;
+
+            while (y, x) != (oy, ox) {
+                bdx += 1;
+                bdy += 1;
+
+                if y_gaps.contains(&(y as usize)) {
+                    dy1 += DELTA1 - 1; // don't count the extra above ^
+                    dy2 += DELTA2 - 1;
                 }
+
+                if x_gaps.contains(&(y as usize)) {
+                    dx1 += DELTA1 - 1;
+                    dy2 += DELTA2 - 1;
+                }
+
+                y += diry;
                 x += dirx;
             }
 
-            if !visited.contains_key(&((py, px), (oy, ox))) || !visited.contains_key(&((oy, ox), (py, px))) {
-                visited.insert(((py, px), (oy, ox)), disty + distx);
-            }
+            visited.insert(
+                ((py, px), (oy, ox)),
+                (bdx + bdy + dy1 + dx1, bdx + bdy + dy2 + dx2),
+            );
         }
     }
 
-    // this should overcount it by 2
-    println!("{:?}", visited.values().sum::<i64>() / 2);
+    let (part1, part2): (Vec<i64>, Vec<i64>) = visited.values().copied().unzip();
+
+    println!("Part1: {}", part1.into_iter().sum::<i64>());
+    println!("Part2: {}", part2.into_iter().sum::<i64>());
 }
 
 fn _dot(map: &Vec<Vec<char>>) {
