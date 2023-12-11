@@ -93,7 +93,7 @@ pub fn run() {
             while x != ox {
                 bdx += 1;
 
-                if x_gaps.contains(&(y as usize)) {
+                if x_gaps.contains(&(x as usize)) {
                     dx1 += DELTA1 - 1;
                     dx2 += DELTA2 - 1;
                 }
@@ -101,12 +101,19 @@ pub fn run() {
                 x += dirx;
             }
 
+            // if (py, px) == (5, 1) && (oy, ox) == (9, 4) {
+            //     println!("reach {bdx} {bdy} -- {dy1} {dx1}");
+            // }
+
             visited.insert(
                 ((py, px), (oy, ox)),
                 (bdx + bdy + dy1 + dx1, bdx + bdy + dy2 + dx2),
             );
         }
     }
+
+    // 1 and 7
+    // println!("{:?}", visited[&((5, 1), (9, 4))]);
 
     let (part1, part2): (Vec<i64>, Vec<i64>) = visited.values().copied().unzip();
 
