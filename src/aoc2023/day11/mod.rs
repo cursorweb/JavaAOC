@@ -79,8 +79,7 @@ pub fn run() {
             let mut bdx = 0;
             let mut bdy = 0;
 
-            while (y, x) != (oy, ox) {
-                bdx += 1;
+            while y != oy {
                 bdy += 1;
 
                 if y_gaps.contains(&(y as usize)) {
@@ -88,12 +87,17 @@ pub fn run() {
                     dy2 += DELTA2 - 1;
                 }
 
+                y += diry;
+            }
+
+            while x != ox {
+                bdx += 1;
+
                 if x_gaps.contains(&(y as usize)) {
                     dx1 += DELTA1 - 1;
-                    dy2 += DELTA2 - 1;
+                    dx2 += DELTA2 - 1;
                 }
 
-                y += diry;
                 x += dirx;
             }
 
