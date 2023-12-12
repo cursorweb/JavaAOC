@@ -75,30 +75,3 @@ macro_rules! input {
         stdin().read_line(&mut String::new()).unwrap();
     };
 }
-
-fn factorial<T>(n: T) -> T
-where
-    T: std::ops::Mul<Output = T>
-        + std::iter::Product
-        + From<u8>
-        + std::cmp::PartialOrd
-        + std::cmp::PartialEq
-        + std::ops::AddAssign
-        + Copy,
-{
-    if n < T::from(0_u8) {
-        panic!("n can't be less than 0")
-    } else if n == T::from(0_u8) || n == T::from(1_u8) {
-        T::from(1_u8)
-    } else {
-        let mut result = T::from(1_u8);
-        let mut i = T::from(2_u8);
-
-        while i <= n {
-            result = result * i;
-            i += T::from(1_u8);
-        }
-
-        result
-    }
-}
