@@ -9,13 +9,28 @@
 /// ```
 #[macro_export]
 macro_rules! read {
-    () => {
-        include_str!("data.txt").lines()
-    };
+    () => {{
+        use std::{fs, path::Path};
 
-    (str) => {
-        include_str!("data.txt")
-    };
+        let file_path = file!();
+        let path = Path::new(file_path).parent().unwrap().join("data.txt");
+
+        fs::read_to_string(&path)
+            .unwrap_or_else(|_| panic!("Please create a data.txt!"))
+            .lines()
+            .map(String::from)
+            .collect::<Vec<String>>()
+            .into_iter()
+    }};
+
+    (str) => {{
+        use std::{fs, path::Path};
+
+        let file_path = file!();
+        let path = Path::new(file_path).parent().unwrap().join("data.txt");
+
+        fs::read_to_string(&path).unwrap_or_else(|_| panic!("Please create a data.txt!"))
+    }};
 }
 
 /// The four directions (up, down, left, right)
@@ -59,4 +74,31 @@ macro_rules! input {
         stdout().flush().unwrap();
         stdin().read_line(&mut String::new()).unwrap();
     };
+}
+
+fn factorial<T>(n: T) -> T
+where
+    T: std::ops::Mul<Output = T>
+        + std::iter::Product
+        + From<u8>
+        + std::cmp::PartialOrd
+        + std::cmp::PartialEq
+        + std::ops::AddAssign
+        + Copy,
+{
+    if n < T::from(0_u8) {
+        panic!("n can't be less than 0")
+    } else if n == T::from(0_u8) || n == T::from(1_u8) {
+        T::from(1_u8)
+    } else {
+        let mut result = T::from(1_u8);
+        let mut i = T::from(2_u8);
+
+        while i <= n {
+            result = result * i;
+            i += T::from(1_u8);
+        }
+
+        result
+    }
 }

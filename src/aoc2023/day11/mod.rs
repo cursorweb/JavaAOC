@@ -101,10 +101,6 @@ pub fn run() {
                 x += dirx;
             }
 
-            // if (py, px) == (5, 1) && (oy, ox) == (9, 4) {
-            //     println!("reach {bdx} {bdy} -- {dy1} {dx1}");
-            // }
-
             visited.insert(
                 ((py, px), (oy, ox)),
                 (bdx + bdy + dy1 + dx1, bdx + bdy + dy2 + dx2),
