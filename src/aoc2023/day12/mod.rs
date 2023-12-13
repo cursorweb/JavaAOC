@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use itertools::Itertools;
 
 use crate::read;
@@ -14,45 +16,80 @@ pub fn run() {
         })
         .collect_vec();
 
-    let sum: i32 = records
+    let sum: i64 = records
         .iter()
         .map(|(chars, group)| count_solve(&chars, &group))
         .sum();
 
-    // println!(">> {}", count_solve(&records[i].0, &records[i].1));
     println!("Part1: {sum:?}");
+
+    let records = records
+        .into_iter()
+        .map(|(chars, nums)| {
+            let chars = String::from_iter(chars);
+            let string = vec![&chars].repeat(5);
+            let nums = nums.repeat(5);
+
+            (string.into_iter().join("?").chars().collect_vec(), nums)
+        })
+        .collect_vec();
+
+    let sum: i64 = records
+        .iter()
+        .map(|(chars, group)| count_solve(&chars, &group))
+        .sum();
+
+    println!("Part2: {:?}", sum);
+}
+
+fn count_solve(chars: &[char], group: &[i32]) -> i64 {
+    let mut cache = HashMap::new();
+    let out = _count_solve(chars, group, &mut cache);
+    out
 }
 
 /// go through remaining char, and if can solve group, solve group
-fn count_solve(chars: &[char], group: &[i32]) -> i32 {
+fn _count_solve(chars: &[char], group: &[i32], cache: &mut HashMap<(String, i32), i64>) -> i64 {
+    if let Some(&val) = cache.get(&hash_it(chars, group)) {
+        return val;
+    }
+
+    // base cases
     if chars.len() == 0 {
-        return if group.len() > 0 {
+        let val = if group.len() > 0 {
             // There are still groups unsolved, so not solved
             0
         } else {
             // Success!! Solved all groups!
             1
         };
+
+        return val;
     }
 
     if group.len() == 0 {
-        return if chars.contains(&'#') {
+        let val = if chars.contains(&'#') {
             // if no more groups, but there's a #
             // then that's bad
             0
         } else {
             1
         };
+
+        return val;
     }
 
+    let mut sum = 0;
+
     if chars[0] == '.' {
-        return count_solve(&chars[1..], group);
+        sum += _count_solve(&chars[1..], group, cache);
     }
 
     // check if it solved a group
     if chars[0] == '#' {
         let group_len = group[0] as usize;
         if group_len > chars.len() {
+            cache.insert(hash_it(chars, group), 0);
             return 0;
         }
 
@@ -74,19 +111,18 @@ fn count_solve(chars: &[char], group: &[i32]) -> i32 {
             // got the first group down
             // now check if can go next
             // skip the '.' at group_len (or if it is a '?' convert it into a '.')
-
-            return count_solve(
+            sum += _count_solve(
                 if group_len + 1 < chars.len() {
                     &chars[group_len + 1..]
                 } else {
                     &[]
                 },
                 &group[1..],
+                cache,
             );
         } else {
             // didn't work, and we can't skip it either
             // because this # MUST be accounted for! (which it hasn't)
-            return 0;
         }
     }
 
@@ -99,8 +135,13 @@ fn count_solve(chars: &[char], group: &[i32]) -> i32 {
         with_hash.extend(rest);
 
         // with a # or as a dot (so skip)
-        return count_solve(&with_hash, group) + count_solve(rest, group);
+        sum += _count_solve(&with_hash, group, cache) + _count_solve(rest, group, cache);
     }
 
-    unreachable!("skill issue lmao")
+    cache.insert(hash_it(chars, group), sum);
+    sum
+}
+
+fn hash_it(chars: &[char], group: &[i32]) -> (String, i32) {
+    (String::from_iter(chars), group.len() as i32)
 }
