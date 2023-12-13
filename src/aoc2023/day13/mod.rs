@@ -12,12 +12,11 @@ pub fn run() {
         })
         .collect_vec();
 
-    // warning: index by 1
-    println!(
-        "{:?}",
-        grids.iter().map(|grid| get_sym(grid).into()).sum::<usize>()
-    );
-    // println!("{:?}", split_col(2, &grids[0]));
+    let mirrors: usize = grids.iter().map(|grid| get_sym(grid).into()).sum();
+    println!("Part1: {}", mirrors);
+
+    let cleaned: usize = grids.iter().map(|grid| get_sym2(grid).into()).sum();
+    println!("Part2: {}", cleaned);
 }
 
 /// yessir
@@ -30,7 +29,7 @@ fn get_col(x: usize, grid: &Vec<Vec<char>>) -> Vec<char> {
     out
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, Copy)]
 enum Symmetry {
     Vert(usize),
     Horiz(usize),
@@ -66,16 +65,21 @@ fn split(i: usize, grid: &Vec<Vec<char>>) -> (Vec<Vec<char>>, Vec<Vec<char>>) {
     )
 }
 
+/// get number of different
+fn diff(x: &Vec<char>, y: &Vec<char>) -> i32 {
+    let mut n = 0;
+    for i in 0..x.len() {
+        if x[i] != y[i] {
+            n += 1;
+        }
+    }
+    n
+}
+
 fn get_sym(grid: &Vec<Vec<char>>) -> Symmetry {
     // horizontal
     for y in 1..grid.len() {
         let (top, bottom) = split(y, grid);
-
-        // println!(
-        //     "y={y}\n{}\n----\n{}\n\n",
-        //     top.iter().map(|x| String::from_iter(x)).join("\n"),
-        //     bottom.iter().map(|x| String::from_iter(x)).join("\n")
-        // );
 
         let mut found = true;
         let offset = top.len().min(bottom.len());
@@ -97,12 +101,6 @@ fn get_sym(grid: &Vec<Vec<char>>) -> Symmetry {
     for x in 1..x_grid.len() {
         let (left, right) = split(x, x_grid);
 
-        // println!(
-        //     "x={x}\n{}\n----\n{}\n\n",
-        //     left.iter().map(|x| String::from_iter(x)).join("\n"),
-        //     right.iter().map(|x| String::from_iter(x)).join("\n")
-        // );
-
         let mut found = true;
         let offset = left.len().min(right.len());
         for i in 0..offset {
@@ -118,9 +116,54 @@ fn get_sym(grid: &Vec<Vec<char>>) -> Symmetry {
         }
     }
 
-    _dot(grid);
-    _dot(x_grid);
     unreachable!("skill issue lmao")
+}
+
+fn get_sym2(grid: &Vec<Vec<char>>) -> Symmetry {
+    // horizontal
+    for y in 1..grid.len() {
+        let (top, bottom) = split(y, grid);
+
+        let mut smudges = 0;
+        let offset = top.len().min(bottom.len());
+        for i in 0..offset {
+            if top[i] != bottom[i] {
+                smudges += diff(&top[i], &bottom[i]);
+                if smudges > 1 {
+                    break;
+                }
+            }
+        }
+
+        if smudges == 1 {
+            // include the y
+            return Horiz(y);
+        }
+    }
+
+    // vert
+    let x_grid = &rotate(grid);
+    for x in 1..x_grid.len() {
+        let (left, right) = split(x, x_grid);
+
+        let mut smudges = 0;
+        let offset = left.len().min(right.len());
+        for i in 0..offset {
+            if left[i] != right[i] {
+                smudges += diff(&left[i], &right[i]);
+                if smudges > 1 {
+                    break;
+                }
+            }
+        }
+
+        if smudges == 1 {
+            // include the y
+            return Vert(x);
+        }
+    }
+
+    unreachable!("break a mirror NOW")
 }
 
 fn _dot(grid: &Vec<Vec<char>>) {
