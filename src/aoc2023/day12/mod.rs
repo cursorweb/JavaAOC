@@ -79,10 +79,10 @@ fn _count_solve(chars: &[char], group: &[i32], cache: &mut HashMap<(String, i32)
         return val;
     }
 
-    let mut sum = 0;
-
     if chars[0] == '.' {
-        sum += _count_solve(&chars[1..], group, cache);
+        let out = _count_solve(&chars[1..], group, cache);
+        cache.insert(hash_it(chars, group), out);
+        return out;
     }
 
     // check if it solved a group
@@ -111,7 +111,7 @@ fn _count_solve(chars: &[char], group: &[i32], cache: &mut HashMap<(String, i32)
             // got the first group down
             // now check if can go next
             // skip the '.' at group_len (or if it is a '?' convert it into a '.')
-            sum += _count_solve(
+            let out = _count_solve(
                 if group_len + 1 < chars.len() {
                     &chars[group_len + 1..]
                 } else {
@@ -120,9 +120,13 @@ fn _count_solve(chars: &[char], group: &[i32], cache: &mut HashMap<(String, i32)
                 &group[1..],
                 cache,
             );
+            cache.insert(hash_it(chars, group), out);
+            return out;
         } else {
             // didn't work, and we can't skip it either
             // because this # MUST be accounted for! (which it hasn't)
+            cache.insert(hash_it(chars, group), 0);
+            return 0;
         }
     }
 
@@ -135,11 +139,12 @@ fn _count_solve(chars: &[char], group: &[i32], cache: &mut HashMap<(String, i32)
         with_hash.extend(rest);
 
         // with a # or as a dot (so skip)
-        sum += _count_solve(&with_hash, group, cache) + _count_solve(rest, group, cache);
+        let out = _count_solve(&with_hash, group, cache) + _count_solve(rest, group, cache);
+        cache.insert(hash_it(chars, group), out);
+        return out;
     }
 
-    cache.insert(hash_it(chars, group), sum);
-    sum
+    unreachable!("skill issue lmao")
 }
 
 fn hash_it(chars: &[char], group: &[i32]) -> (String, i32) {

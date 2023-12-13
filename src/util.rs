@@ -17,10 +17,8 @@ macro_rules! read {
 
         fs::read_to_string(&path)
             .unwrap_or_else(|_| panic!("Please create a data.txt!"))
+            .leak()
             .lines()
-            .map(String::from)
-            .collect::<Vec<String>>()
-            .into_iter()
     }};
 
     (str) => {{
@@ -29,7 +27,7 @@ macro_rules! read {
         let file_path = file!();
         let path = Path::new(file_path).parent().unwrap().join("data.txt");
 
-        fs::read_to_string(&path).unwrap_or_else(|_| panic!("Please create a data.txt!"))
+        fs::read_to_string(&path).unwrap_or_else(|_| panic!("Please create a data.txt!")).leak()
     }};
 }
 
