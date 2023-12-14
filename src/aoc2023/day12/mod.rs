@@ -39,7 +39,7 @@ pub fn run() {
         .map(|(chars, group)| count_solve(&chars, &group))
         .sum();
 
-    println!("Part2: {:?}", sum);
+    println!("Part2: {sum:?}");
 }
 
 fn count_solve(chars: &[char], group: &[i32]) -> i64 {

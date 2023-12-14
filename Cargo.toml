@@ -15,5 +15,9 @@ path = "bin/create.rs"
 name = "lfify"
 path = "bin/lfify.rs"
 
+[[bin]]
+name = "cleanup"
+path = "bin/cleanup.rs"
+
 [dependencies]
 itertools = "0.12.0"
