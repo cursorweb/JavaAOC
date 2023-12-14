@@ -27,7 +27,6 @@ pub fn run() {
     }
 
     println!("Part1: {}", get_a_load_of_this(map));
-    // drop(map); // don't use it don't use it don't use it
 
     // value, (index, weight)
     let mut cache: HashMap<String, usize> = HashMap::new();
@@ -42,23 +41,26 @@ pub fn run() {
         if let Some(prev_i) = cache.get(&dot) {
             let rest = COUNT - i;
             let skip = i - prev_i;
-            remaining = rest % skip;
+            remaining = rest % skip - 1;
+            // 0 1 2 3 4 5 6 7 8 9 10 11 12
+            // 0 1 2 3 4 5 6 7     ^
+            //         ^     ^ skip = 3
+            // rest = 12 - 7 = 5
+            // remaining = 5 % 3 == 2
+            // you need to subtract one because we start at 0
             break;
         } else {
-            // gaming hard or hardly gaming?
             cache.insert(dot, i);
         }
     }
 
     assert_ne!(remaining, 0);
 
-    println!("{remaining}");
-    for _ in 0..(remaining - 1) {
+    for _ in 0..remaining {
         cycle(&mut map);
     }
 
-    // are you kidding me?? why???
-    println!("{}", get_a_load_of_this(map));
+    println!("Part2: {}", get_a_load_of_this(map));
 }
 
 fn cycle(map: &mut Vec<Vec<char>>) {
