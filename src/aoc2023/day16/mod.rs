@@ -2,7 +2,7 @@ use std::collections::{HashMap, HashSet, VecDeque};
 
 use itertools::Itertools;
 
-use crate::{dot, read};
+use crate::read;
 
 pub fn run() {
     let file = read!();
@@ -171,15 +171,6 @@ fn bfs(map: &Vec<Vec<char>>, start: (i32, i32), dir: (i32, i32)) -> i32 {
             }
             _ => unreachable!(),
         }
-
-        // if start.0 == 1 {
-        //     let v = _map(&visited);
-        //     dot!(
-        //         map,
-        //         |y, x, c| if v.contains(&(y, x)) { '#' } else { c },
-        //         true
-        //     );
-        // }
     }
 
     let visited: HashSet<(i32, i32)> = visited
