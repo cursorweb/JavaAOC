@@ -40,11 +40,11 @@ impl Ord for State {
 }
 
 fn dijkstra(map: &Vec<Vec<i32>>, minstep: i32, maxstep: i32) -> i32 {
+    // the dists need to account for direction as well
+    // as paths can intersect
     let mut dist = HashMap::new();
-
     let mut heap = BinaryHeap::new();
 
-    // dist.insert(((0, 0), (0, 0)), 0);
     heap.push(State {
         pos: (0, 0),
         dir: (0, 0),
@@ -106,112 +106,3 @@ fn dijkstra(map: &Vec<Vec<i32>>, minstep: i32, maxstep: i32) -> i32 {
 
     unreachable!("skill issue lmao")
 }
-
-/*
-fn bfs(map: &Vec<Vec<i32>>) -> i32 {
-    let mut queue = VecDeque::new();
-    let mut visited = HashSet::new();
-    let endy = map.len() as i32 - 1;
-    let endx = map[0].len() as i32 - 1;
-
-    queue.push_front(State {
-        pos: (0, 1),
-        dir: (0, 1),
-        heat_loss: 0,
-        count: 3,
-    });
-
-    queue.push_front(State {
-        pos: (1, 0),
-        dir: (1, 0),
-        heat_loss: 0,
-        count: 3,
-    });
-
-    let mut min = i32::MAX;
-
-    while let Some(state) = queue.pop_front() {
-        let State {
-            pos,
-            dir,
-            mut heat_loss,
-            count,
-        } = state;
-
-        if visited.contains(&state) {
-            continue;
-        }
-
-        visited.insert(state);
-
-        if pos == (endy, endx) {
-            min = min.min(heat_loss);
-        }
-
-        let (y, x) = pos;
-        if y >= 0 && x >= 0 && y < map.len() as i32 && x < map[0].len() as i32 {
-            heat_loss += map[y as usize][x as usize];
-        } else {
-            continue;
-        }
-
-        if count > 0 {
-            // can move
-            let ny = pos.0 + dir.0;
-            let nx = pos.1 + dir.1;
-
-            queue.push_front(State {
-                pos: (ny, nx),
-                dir,
-                heat_loss,
-                count: count - 1,
-            });
-        }
-
-        if dir.0 != 0 {
-            queue.push_front(State {
-                pos: (pos.0, pos.1 + 1),
-                dir: (0, 1),
-                heat_loss,
-                count: 3,
-            });
-
-            queue.push_front(State {
-                pos: (pos.0, pos.1 - 1),
-                dir: (0, -1),
-                heat_loss,
-                count: 3,
-            });
-        }
-
-        if dir.1 != 0 {
-            queue.push_front(State {
-                pos: (pos.0 + 1, pos.1),
-                dir: (1, 0),
-                heat_loss,
-                count: 3,
-            });
-
-            queue.push_front(State {
-                pos: (pos.0 - 1, pos.1),
-                dir: (-1, 0),
-                heat_loss,
-                count: 3,
-            });
-        }
-
-        // dot!(
-        //     map,
-        //     |y, x, c: i32| if x == pos.1 && y == pos.0 {
-        //         "#".to_string()
-        //     } else {
-        //         ".".to_string()
-        //     },
-        //     true
-        // );
-        // println!("{queue:?}");
-    }
-
-    min
-}
-*/
