@@ -27,7 +27,9 @@ macro_rules! read {
         let file_path = file!();
         let path = Path::new(file_path).parent().unwrap().join("data.txt");
 
-        fs::read_to_string(&path).unwrap_or_else(|_| panic!("Please create a data.txt!")).leak()
+        fs::read_to_string(&path)
+            .unwrap_or_else(|_| panic!("Please create a data.txt!"))
+            .leak()
     }};
 }
 
@@ -71,5 +73,68 @@ macro_rules! input {
         print!(">>> {}:{}:{} : ", file!(), line!(), column!());
         stdout().flush().unwrap();
         stdin().read_line(&mut String::new()).unwrap();
+    };
+}
+
+/// print grid of array
+/// (y, x) where y++ and x++ are down and right
+///
+/// Usage:
+/// ```
+/// dot!(my_vec);
+/// dot!(my_vec, true);
+/// dot!(map, |y, x, c| match c {
+///     _ if y == 0 && x == 0 => '#',
+///     _ => c,
+/// });
+/// dot!(map, |y, x, c| match c {
+///     _ if y == 0 && x == 0 => '#',
+///     _ => c,
+/// }, true);
+/// ```
+#[macro_export]
+macro_rules! dot {
+    ($map:expr) => {
+        for row in $map {
+            for c in row {
+                print!("{c}");
+            }
+            println!();
+        }
+        println!();
+    };
+
+    ($map:expr, true) => {
+        use crate::input;
+        for row in $map {
+            for c in row {
+                print!("{c}");
+            }
+            println!();
+        }
+        println!();
+        input!();
+    };
+
+    ($map:expr, $fn:expr) => {
+        for (y, row) in $map.iter().enumerate() {
+            for (x, c) in row.iter().enumerate() {
+                print!("{}", $fn(y as i32, x as i32, *c));
+            }
+            println!();
+        }
+        println!();
+    };
+
+    ($map:expr, $fn:expr, true) => {
+        use crate::input;
+        for (y, row) in $map.iter().enumerate() {
+            for (x, c) in row.iter().enumerate() {
+                print!("{}", $fn(y as i32, x as i32, *c));
+            }
+            println!();
+        }
+        println!();
+        input!();
     };
 }
