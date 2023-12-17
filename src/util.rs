@@ -83,14 +83,8 @@ macro_rules! input {
 /// ```
 /// dot!(my_vec);
 /// dot!(my_vec, true);
-/// dot!(map, |y, x, c| match c {
-///     _ if y == 0 && x == 0 => '#',
-///     _ => c,
-/// });
-/// dot!(map, |y, x, c| match c {
-///     _ if y == 0 && x == 0 => '#',
-///     _ => c,
-/// }, true);
+/// dot!(map, |y, x, c| if x == 0 && y == 0 { '#' } else { c });
+/// dot!(map, |y, x, c| if x == 0 && y == 0 { '#' } else { c }, true);
 /// ```
 #[macro_export]
 macro_rules! dot {

@@ -7,7 +7,24 @@ use crate::{dot, read};
 pub fn run() {
     let file = read!();
     let map = file.map(|line| line.chars().collect_vec()).collect_vec();
-    println!("Part1: {}", bfs(&map));
+    println!("Part1: {}", bfs(&map, (0, 0), (0, 1)));
+
+    let width = map[0].len() as i32;
+    let height = map.len() as i32;
+
+    let mut max = -1;
+
+    for y in 0..map.len() {
+        max = max.max(bfs(&map, (y as i32, 0), (0, 1)));
+        max = max.max(bfs(&map, (y as i32, width - 1), (0, -1)));
+    }
+
+    for x in 0..map[0].len() {
+        max = max.max(bfs(&map, (0, x as i32), (1, 0)));
+        max = max.max(bfs(&map, (height - 1, x as i32), (0, -1)));
+    }
+
+    println!("Part2: {max}");
 }
 
 #[derive(PartialEq, Eq, Hash)]
@@ -18,7 +35,7 @@ struct State {
     dir: (i32, i32),
 }
 
-fn bfs(map: &Vec<Vec<char>>) -> i32 {
+fn bfs(map: &Vec<Vec<char>>, start: (i32, i32), dir: (i32, i32)) -> i32 {
     let width = map[0].len() as i32;
     let height = map.len() as i32;
     let mut queue = VecDeque::new();
@@ -40,16 +57,46 @@ fn bfs(map: &Vec<Vec<char>>) -> i32 {
         ((0, -1), (-1, 0)),
     ]);
 
-    queue.push_front(State {
-        pos: (0, 0),
-        dir: match map[0][0] {
-            '/' => rotate_pos[&(0, 1)],
-            '\\' => rotate_neg[&(0, 1)],
-            '.' | '-' => (0, 1),
-            '|' => todo!("ur screwed lmao"),
-            _ => unreachable!(),
-        },
-    });
+    match map[start.0 as usize][start.1 as usize] {
+        '\\' => queue.push_front(State {
+            pos: start,
+            dir: rotate_neg[&dir],
+        }),
+        '/' => queue.push_front(State {
+            pos: start,
+            dir: rotate_pos[&dir],
+        }),
+        '.' => queue.push_front(State { pos: start, dir }),
+        '-' => {
+            if dir.0 != 0 {
+                queue.push_front(State {
+                    pos: start,
+                    dir: (0, -1),
+                });
+                queue.push_front(State {
+                    pos: start,
+                    dir: (0, 1),
+                });
+            } else {
+                queue.push_front(State { pos: start, dir })
+            }
+        }
+        '|' => {
+            if dir.1 != 0 {
+                queue.push_front(State {
+                    pos: start,
+                    dir: (-1, 0),
+                });
+                queue.push_front(State {
+                    pos: start,
+                    dir: (1, 0),
+                });
+            } else {
+                queue.push_front(State { pos: start, dir })
+            }
+        }
+        _ => unreachable!("{}", map[0][0]),
+    }
 
     while let Some(state) = queue.pop_front() {
         let State {
@@ -124,6 +171,15 @@ fn bfs(map: &Vec<Vec<char>>) -> i32 {
             }
             _ => unreachable!(),
         }
+
+        // if start.0 == 1 {
+        //     let v = _map(&visited);
+        //     dot!(
+        //         map,
+        //         |y, x, c| if v.contains(&(y, x)) { '#' } else { c },
+        //         true
+        //     );
+        // }
     }
 
     let visited: HashSet<(i32, i32)> = visited
@@ -131,12 +187,12 @@ fn bfs(map: &Vec<Vec<char>>) -> i32 {
         .map(|State { pos: (y, x), .. }| (y, x))
         .collect();
 
-    dot!(map, |y, x, c| {
-        match c {
-            _ if visited.contains(&(y, x)) => '#',
-            _ => c,
-        }
-    });
-
     visited.len() as i32
+}
+
+fn _map(visited: &HashSet<State>) -> HashSet<(i32, i32)> {
+    visited
+        .iter()
+        .map(|State { pos: (y, x), .. }| (*y, *x))
+        .collect()
 }
