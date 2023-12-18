@@ -41,11 +41,12 @@ impl Ord for State {
 
 fn dijkstra(map: &Vec<Vec<i32>>, minstep: i32, maxstep: i32) -> i32 {
     // the dists need to account for direction as well
-    // as paths can intersect
+    // as paths can intersect, but they aren't the "same" path
+    // because they may be completely distinct due to the max count rule
     let mut dist = HashMap::new();
-    let mut heap = BinaryHeap::new();
+    let mut queue = BinaryHeap::new();
 
-    heap.push(State {
+    queue.push(State {
         pos: (0, 0),
         dir: (0, 0),
         heat_loss: 0,
@@ -57,7 +58,7 @@ fn dijkstra(map: &Vec<Vec<i32>>, minstep: i32, maxstep: i32) -> i32 {
         pos,
         dir,
         heat_loss,
-    }) = heap.pop()
+    }) = queue.pop()
     {
         // sad fact: you can't print out heap because it isn't printed in order
         // happy debugging ;)
@@ -93,7 +94,7 @@ fn dijkstra(map: &Vec<Vec<i32>>, minstep: i32, maxstep: i32) -> i32 {
                 if k >= minstep
                     && heat_loss < *dist.get(&((ny, nx), (ndy, ndx))).unwrap_or(&i32::MAX)
                 {
-                    heap.push(State {
+                    queue.push(State {
                         pos: (ny, nx),
                         dir: (ndy, ndx),
                         heat_loss,
