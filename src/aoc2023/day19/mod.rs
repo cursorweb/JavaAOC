@@ -130,8 +130,6 @@ fn is_accepted(part: &[i32], map: &HashMap<String, WorkFlow>, name: &str) -> boo
 struct State<'a> {
     xmas: [(i32, i32); 4],
     workflow: &'a str,
-    /// index of the one to consider
-    index: usize,
 }
 
 /// equation solver:
@@ -146,7 +144,6 @@ fn bfs_range(workflows: &HashMap<String, WorkFlow>) -> i64 {
         workflow: "in",
         // inclusive
         xmas: [(1, 4000); 4],
-        index: 0,
     });
 
     let mut sum = 0;
@@ -154,7 +151,6 @@ fn bfs_range(workflows: &HashMap<String, WorkFlow>) -> i64 {
     while let Some(State {
         workflow: workflow_name,
         xmas,
-        index,
     }) = queue.pop_front()
     {
         // sometimes could get to impossible state I suppose
@@ -181,48 +177,38 @@ fn bfs_range(workflows: &HashMap<String, WorkFlow>) -> i64 {
 
         let workflow = &workflows[workflow_name];
 
-        // last
-        if index >= workflow.conds.len() {
+        let mut xmas = xmas;
+        for cond in &workflow.conds {
+            let mut inverse_xmas = xmas;
+            // we need to "recursively" make sure the next rule range
+            // includes the inverse of the previous rule
+            if cond.lt {
+                // < so max should be < n
+                xmas[cond.cat].1 = cond.num - 1;
+
+                // >= so min should be = n
+                inverse_xmas[cond.cat].0 = cond.num;
+            } else {
+                // > so min should be > n
+                xmas[cond.cat].0 = cond.num + 1;
+
+                // <= so max should be = n
+                inverse_xmas[cond.cat].1 = cond.num;
+            }
+
+            // this assumes condition was met
             queue.push_front(State {
                 xmas,
-                workflow: &workflow.last,
-                index: 0,
+                workflow: &cond.to,
             });
-            continue;
+
+            xmas = inverse_xmas;
         }
 
-        let cond = &workflow.conds[index];
-
-        // we need to "recursively" make sure the next rule range
-        // includes the inverse of the previous rule
-        let mut xmas = xmas;
-        let mut inverse_xmas = xmas;
-        if cond.lt {
-            // < so max should be < n
-            xmas[cond.cat].1 = cond.num - 1;
-
-            // >= so min should be = n
-            inverse_xmas[cond.cat].0 = cond.num;
-        } else {
-            // > so min should be > n
-            xmas[cond.cat].0 = cond.num + 1;
-
-            // <= so max should be = n
-            inverse_xmas[cond.cat].1 = cond.num;
-        }
-
-        // this assumes condition was met
+        // last
         queue.push_front(State {
             xmas,
-            workflow: &cond.to,
-            index: 0,
-        });
-
-        // this assumes we go to next condition (condition NOT met)
-        queue.push_front(State {
-            xmas: inverse_xmas,
-            workflow: workflow_name,
-            index: index + 1,
+            workflow: &workflow.last,
         });
     }
 
