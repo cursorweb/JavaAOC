@@ -2,7 +2,7 @@ use std::collections::{HashMap, VecDeque};
 
 use itertools::Itertools;
 
-use crate::read;
+use crate::{iter_lcm, read};
 
 #[derive(Debug, Clone)]
 enum Module {
@@ -102,7 +102,8 @@ pub fn run() {
         }
 
         if xxs.values().all(|&x| x > 0) {
-            println!("{:?}", xxs.values());
+            // let n = xxs.values().fold(1, |prev, &n| lcm(prev, n));
+            println!("Part2: {}", iter_lcm(xxs.values().copied()));
             break;
         }
     }

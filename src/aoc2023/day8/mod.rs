@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use itertools::Itertools;
 
-use crate::read;
+use crate::{lcm, read};
 
 pub fn run() {
     let file = read!(str);
@@ -94,27 +94,4 @@ pub fn run() {
     }
 
     println!("Part2: {}", finished.values().fold(1, |p, c| lcm(p, c.1)));
-}
-
-fn lcm(first: i64, second: i64) -> i64 {
-    first * second / gcd(first, second)
-}
-fn gcd(first: i64, second: i64) -> i64 {
-    let mut max = first;
-    let mut min = second;
-    if min > max {
-        let val = max;
-        max = min;
-        min = val;
-    }
-
-    loop {
-        let res = max % min;
-        if res == 0 {
-            return min;
-        }
-
-        max = min;
-        min = res;
-    }
 }

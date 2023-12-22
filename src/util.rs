@@ -132,3 +132,31 @@ macro_rules! dot {
         input!();
     };
 }
+
+pub fn iter_lcm(iter: impl Iterator<Item = i64>) -> i64 {
+    iter.fold(1, |p, c| lcm(p, c))
+}
+
+pub fn lcm(first: i64, second: i64) -> i64 {
+    first * second / gcd(first, second)
+}
+
+pub fn gcd(first: i64, second: i64) -> i64 {
+    let mut max = first;
+    let mut min = second;
+    if min > max {
+        let val = max;
+        max = min;
+        min = val;
+    }
+
+    loop {
+        let res = max % min;
+        if res == 0 {
+            return min;
+        }
+
+        max = min;
+        min = res;
+    }
+}
