@@ -4,20 +4,7 @@ use itertools::Itertools;
 
 use crate::read;
 
-/*
-Flip-flop modules (prefix %): on/off = off.
-    High pulse: nothing happens
-    Low pulse: flip on/off.
-        If off: it turns on, sends a high pulse.
-        If on: it turns off, sends a low pulse.
-
-Conjunction modules (prefix &):
-    Previous: high/low = low.
-    Update memory, then send remembered.
-
-Button sends low pulse
-*/
-
+#[derive(Debug, Clone)]
 enum Module {
     /// Flip-flop modules (%) state = off
     /// ```txt
@@ -31,25 +18,13 @@ enum Module {
 
     /// Conjuction modules (&):
     /// Stores type of most recent received from each of connected modules (default low)
-    /// Update memory, then send remembered
+    /// ```txt
+    /// Update memory, then
+    ///     if all high: low
+    ///     else: high
+    /// ```
     Conjunction(HashMap<String, bool>),
 }
-
-// trait Module {
-//     fn send(from: String, is_high: bool) -> Option<bool>;
-// }
-
-// impl Module for FlipFlop {
-//     fn send(from: String, is_high: bool) -> Option<bool> {
-//         todo!()
-//     }
-// }
-
-// impl Module for Conjunction {
-//     fn send(from: String, is_high: bool) -> Option<bool> {
-//         todo!()
-//     }
-// }
 
 use Module::*;
 
@@ -58,7 +33,7 @@ pub fn run() {
 
     let mut broadcast = Vec::new();
 
-    let mut instrs: HashMap<String, (Module, Vec<String>)> = file
+    let old_instrs: HashMap<String, (Module, Vec<String>)> = file
         .filter_map(|line| {
             let (name, dest) = line.split_once(" -> ").unwrap();
 
@@ -79,44 +54,57 @@ pub fn run() {
         })
         .collect();
 
-    /*
-    let mut low = 0;
-    let mut high = 0;
+    let mut instrs = old_instrs.clone();
 
-    low += 1; // button press
-    for dest in broadcast {
-        let (dl, dh) = send_pulse(&dest, &mut instrs, false);
-        low += 1; // the actual broadcast itself
-        low += dl;
-        high += dh;
+    for (name, (_, dests)) in &old_instrs {
+        for dest in dests {
+            if let Some((Conjunction(map), _)) = instrs.get_mut(dest) {
+                map.insert(name.clone(), false);
+            }
+        }
     }
-    */
 
-    let (low, high) = send_pulse(&broadcast, &mut instrs);
+    let mut total_low @ mut total_high = 0;
 
-    println!("{low} * {high} = {}", low * high);
+    for _ in 0..1000 {
+        // println!("data = {instrs:?}");
+        let (low, high) = send_pulse(&broadcast, &mut instrs);
+        total_low += low;
+        total_high += high;
+        // println!("\n");
+        // crate::input!();
+    }
+
+    println!("{total_low} {total_high} {}", total_low * total_high);
 }
 
 fn send_pulse(locs: &[String], map: &mut HashMap<String, (Module, Vec<String>)>) -> (i64, i64) {
-    // long term stack, vs short term stack (short gets added back to long)
     let mut queue = VecDeque::new();
 
     let mut low = 0;
     let mut high = 0;
 
     for loc in locs {
-        println!("broadcaster -false-> {loc}");
-        queue.push_front((loc.clone(), false))
+        queue.push_back(("broadcaster".to_string(), loc.clone(), false));
     }
 
-    while let Some((loc, high_pulse)) = queue.pop_front() {
+    while let Some((from, curr, high_pulse)) = queue.pop_front() {
+        // println!(
+        //     "{}{from} -{high_pulse}-> {curr}",
+        //     match map.get(&from) {
+        //         Some((FlipFlop(_), _)) => "%",
+        //         Some((Conjunction(_), _)) => "&",
+        //         _ => "",
+        //     }
+        // );
+
         if high_pulse {
             high += 1;
         } else {
             low += 1;
         }
 
-        let Some(module) = map.get_mut(&loc) else {
+        let Some(module) = map.get_mut(&curr) else {
             continue;
         };
 
@@ -133,24 +121,24 @@ fn send_pulse(locs: &[String], map: &mut HashMap<String, (Module, Vec<String>)>)
                     *state = !*state;
 
                     for dest in module.1.clone() {
-                        println!("%{loc} -{state}-> {dest}");
-                        queue.push_front((dest, *state));
+                        queue.push_back((curr.clone(), dest.clone(), *state));
                     }
                 }
             }
-            Conjunction(prev) => {
+            Conjunction(mem) => {
                 /*
                 Conjunction modules (prefix &):
                     Previous: high/low = low.
-                    Update memory, then send remembered.
+                    Update memory, then
+                        if all high: low
+                        else: high
                 */
-                let entry = prev.entry(loc.clone()).or_insert(false);
-                let prev = *entry;
-                *entry = high_pulse;
+                // println!("\tvals for {curr:?} {:?}", mem);
+                mem.insert(from, high_pulse);
+                let val = !mem.values().all(|&v| v == true);
 
                 for dest in module.1.clone() {
-                    println!("&{loc} -{prev}-> {dest}");
-                    queue.push_front((dest, prev));
+                    queue.push_back((curr.clone(), dest.clone(), val));
                 }
             }
         }
@@ -159,60 +147,3 @@ fn send_pulse(locs: &[String], map: &mut HashMap<String, (Module, Vec<String>)>)
     // include the button press
     (low + 1, high)
 }
-
-/*
-/// (low, high)
-fn send_pulse(loc: &str, map: &mut HashMap<String, Module>, high_pulse: bool) -> (i64, i64) {
-    let Some(module) = map.get_mut(loc) else {
-        return (0, 0);
-    };
-
-    if module.is_flipflop {
-        if !high_pulse {
-            module.state = !module.state;
-            let state = module.state;
-
-            let mut low = 0;
-            let mut high = 0;
-
-            for dest in &module.dests.clone() {
-                println!("{loc} -{state}-> {dest}");
-                let (dl, dh) = send_pulse(dest, map, state);
-                low += dl;
-                high += dh;
-            }
-
-            if state {
-                high += 1;
-            } else {
-                low += 1;
-            }
-
-            (low, high)
-        } else {
-            (0, 0)
-        }
-    } else {
-        let prev = module.state;
-        module.state = !module.state;
-
-        let mut low = 0;
-        let mut high = 0;
-
-        for dest in &module.dests.clone() {
-            println!("{loc} -{prev}-> {dest}");
-            let (dl, dh) = send_pulse(dest, map, prev);
-            low += dl;
-            high += dh;
-        }
-
-        if prev {
-            high += 1;
-        } else {
-            low += 1;
-        }
-
-        (low, high)
-    }
-}
-*/
