@@ -54,31 +54,67 @@ pub fn run() {
         })
         .collect();
 
+    // sets all the default values
     let mut instrs = old_instrs.clone();
 
-    for (name, (_, dests)) in &old_instrs {
+    /*
+    P2 Observations:
+    rx <-- &yy <-- multiple &xx
+    */
+
+    // & sends a low when all are high
+    // all the &xx should be high (so should receive at least one high)
+    // let mut lows = 0;
+    let mut yy = "";
+    let mut xxs = HashMap::new();
+
+    for (from, (_, dests)) in &old_instrs {
         for dest in dests {
+            if dest == "rx" {
+                // should only have one
+                assert_eq!(yy, "");
+                yy = from;
+            }
+
             if let Some((Conjunction(map), _)) = instrs.get_mut(dest) {
-                map.insert(name.clone(), false);
+                map.insert(from.clone(), false);
+            }
+        }
+    }
+
+    for (from, (_, dests)) in &old_instrs {
+        for dest in dests {
+            if dest == yy {
+                xxs.insert(from.clone(), 0);
             }
         }
     }
 
     let mut total_low @ mut total_high = 0;
 
-    for _ in 0..1000 {
-        // println!("data = {instrs:?}");
-        let (low, high) = send_pulse(&broadcast, &mut instrs);
+    for i in 1.. {
+        let (low, high) = send_pulse(&broadcast, &mut instrs, &mut xxs, yy, i);
         total_low += low;
         total_high += high;
-        // println!("\n");
-        // crate::input!();
-    }
 
-    println!("{total_low} {total_high} {}", total_low * total_high);
+        if i == 1000 {
+            println!("Part1: {}", total_low * total_high);
+        }
+
+        if xxs.values().all(|&x| x > 0) {
+            println!("{:?}", xxs.values());
+            break;
+        }
+    }
 }
 
-fn send_pulse(locs: &[String], map: &mut HashMap<String, (Module, Vec<String>)>) -> (i64, i64) {
+fn send_pulse(
+    locs: &[String],
+    map: &mut HashMap<String, (Module, Vec<String>)>,
+    cycles: &mut HashMap<String, i64>,
+    yy: &str,
+    i: i64,
+) -> (i64, i64) {
     let mut queue = VecDeque::new();
 
     let mut low = 0;
@@ -89,19 +125,16 @@ fn send_pulse(locs: &[String], map: &mut HashMap<String, (Module, Vec<String>)>)
     }
 
     while let Some((from, curr, high_pulse)) = queue.pop_front() {
-        // println!(
-        //     "{}{from} -{high_pulse}-> {curr}",
-        //     match map.get(&from) {
-        //         Some((FlipFlop(_), _)) => "%",
-        //         Some((Conjunction(_), _)) => "&",
-        //         _ => "",
-        //     }
-        // );
-
         if high_pulse {
             high += 1;
         } else {
             low += 1;
+        }
+
+        if curr == yy && high_pulse {
+            if cycles[&from] == 0 {
+                cycles.insert(from.clone(), i);
+            }
         }
 
         let Some(module) = map.get_mut(&curr) else {
@@ -133,7 +166,6 @@ fn send_pulse(locs: &[String], map: &mut HashMap<String, (Module, Vec<String>)>)
                         if all high: low
                         else: high
                 */
-                // println!("\tvals for {curr:?} {:?}", mem);
                 mem.insert(from, high_pulse);
                 let val = !mem.values().all(|&v| v == true);
 
