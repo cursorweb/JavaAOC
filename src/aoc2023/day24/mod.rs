@@ -9,27 +9,41 @@ const MAX: f64 = 400_000_000_000_000.0;
 
 pub fn run() {
     let file = read!();
-    let vels: Vec<((_, _, _), (_, _, _))> = file
+    let vels = file
         .map(|line| {
             let (pos, vel) = line.split_once(" @ ").unwrap();
 
-            let pos = pos
+            let pos: (f64, f64, f64) = pos
                 .split(", ")
-                .map(|n| n.trim().parse::<f64>().unwrap())
+                .map(|n| n.trim().parse().unwrap())
                 .collect_tuple()
                 .unwrap();
-            let vel = vel
+            let vel: (f64, f64, f64) = vel
                 .split(", ")
-                .map(|n| n.trim().parse::<f64>().unwrap())
+                .map(|n| n.trim().parse().unwrap())
                 .collect_tuple()
                 .unwrap();
 
-            (pos, vel)
+            // normalize
+            let vel_mag = 1f64;
+            // let vel_mag = f64::sqrt(vel.0 * vel.0 + vel.1 * vel.1 + vel.2 * vel.2);
+
+            (pos, (vel.0 / vel_mag, vel.1 / vel_mag, vel.2 / vel_mag))
         })
         .collect_vec();
 
     let mut count = 0;
 
+    /*
+    sys of equations:
+    x1 + m1 * t = x2 + r1 * s
+    y1 + m2 * t = y2 + r2 * s
+
+    m1, m2 are vels of (x1, y1)
+    r1, r2 are vels of (x2, y2)
+
+    t, s = time
+    */
     for &(pos1, vel1) in &vels {
         for &(pos2, vel2) in &vels {
             if pos1 == pos2 && vel1 == vel2 {
@@ -53,15 +67,14 @@ pub fn run() {
 
             let (x, y) = (x1 + m1 * t, y1 + m2 * t);
 
-            // println!("MIN <= {x} == {}", MIN <= x);
-
             if MIN <= x && x <= MAX && MIN <= y && y <= MAX {
-                // println!("{pos1:?} {pos2:?}");
-                // println!("{x} {y}\n");
                 count += 1;
             }
         }
     }
 
-    println!("{}", count / 2);
+    // double counting
+    println!("Part1: {}", count / 2);
+
+    // Vi - Vr
 }

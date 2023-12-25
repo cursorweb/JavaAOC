@@ -1,7 +1,7 @@
 {
     "files.eol": "\n",
     "rust-analyzer.inlayHints.chainingHints.enable": false,
-    "editor.formatOnSave": true,
+    "editor.formatOnSave": false,
     "rust-analyzer.showUnlinkedFileNotification": false,
     "editor.renderWhitespace": "selection"
 }
