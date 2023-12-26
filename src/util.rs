@@ -113,7 +113,7 @@ macro_rules! dot {
     ($map:expr, $fn:expr) => {
         for (y, row) in $map.iter().enumerate() {
             for (x, c) in row.iter().enumerate() {
-                print!("{}", $fn(y as i32, x as i32, *c));
+                print!("{}", $fn(y.try_into().unwrap(), x.try_into().unwrap(), *c));
             }
             println!();
         }
@@ -124,7 +124,7 @@ macro_rules! dot {
         use crate::input;
         for (y, row) in $map.iter().enumerate() {
             for (x, c) in row.iter().enumerate() {
-                print!("{}", $fn(y as i32, x as i32, *c));
+                print!("{}", $fn(y.try_into().unwrap(), x.try_into().unwrap(), *c));
             }
             println!();
         }

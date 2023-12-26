@@ -1,6 +1,9 @@
+#![allow(unused)]
+use std::collections::{HashSet, HashMap};
+
 use itertools::Itertools;
 
-use crate::read;
+use crate::{read, gcd};
 
 const MIN: f64 = 200_000_000_000_000.0;
 const MAX: f64 = 400_000_000_000_000.0;
@@ -76,5 +79,44 @@ pub fn run() {
     // double counting
     println!("Part1: {}", count / 2);
 
-    // Vi - Vr
+    let mut theset = HashMap::new();
+
+    for &(pos, (vx, vy, vz)) in &vels {
+        for &(pos2, (vx1, vy1, vz1)) in &vels {
+            if pos == pos2 {
+                continue;
+            }
+
+            if vx == vx1 {
+                let entry = theset.entry(vx as i64).or_insert(HashSet::new());
+                entry.insert(pos.0 as i64);
+                entry.insert(pos2.0 as i64);
+                // theset.insert(vx as i64);
+            }
+
+            // if vy == 61.0 {
+            //     let diff = (pos.0 - pos2.1).abs();
+            //     println!("dx -- {} {:?}", diff, factor(diff));
+            //     break;
+            // }
+
+            // vx = -177 -176 125, 128
+
+            // if vx == 123.0 {
+            //     let diff = (pos.0 - pos2.0).abs();
+            //     println!("dx -- {} {:?}", diff, factor(diff));
+            // }
+        }
+    }
+
+    theset = theset.into_iter().filter(|(_, v)| v.len() >= 3).collect();
+
+    // for (key, val) in theset {
+    //     let mut rocks = val.into_iter();
+    //     let (r1, r2, r3) = (rocks.next().unwrap(), rocks.next().unwrap(), rocks.next().unwrap());
+    //     let dx = gcd(r2 - r1, r3 - r1);
+        
+    // }
+
+    println!("{:?}", theset.keys());
 }
