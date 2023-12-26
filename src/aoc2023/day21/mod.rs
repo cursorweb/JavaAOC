@@ -1,12 +1,11 @@
-use std::collections::{HashMap, HashSet, VecDeque};
+use std::collections::{HashSet, VecDeque};
 
 use itertools::Itertools;
 
 use crate::{read, DIRS};
 
-const STEPS: i32 = 64;
-const STEPS2: i64 = 10; //26_501_365;
-                        // n = 2
+const STEPS: i64 = 64;
+const STEPS2: i64 = 26_501_365;
 
 pub fn run() {
     let file = read!();
@@ -30,82 +29,8 @@ pub fn run() {
         })
         .collect_vec();
 
-    let (part1, part2) = bfs(&map, start);
+    let part1 = bfs(&map, start, STEPS, 0);
     println!("Part1: {part1}");
-    println!("Part2: {part2}");
-}
-
-fn bfs(map: &Vec<Vec<char>>, (sy, sx): (i64, i64)) -> (i64, i64) {
-    let mut queue = VecDeque::new();
-    let mut visited = HashMap::new();
-
-    queue.push_front(((sy, sx), 0));
-
-    let mut ans = HashSet::new();
-
-    while let Some(((y, x), steps)) = queue.pop_front() {
-        if visited.contains_key(&(y, x)) {
-            continue;
-        }
-
-        visited.insert((y, x), steps as i64);
-
-        if steps % 2 == 0 && steps <= STEPS {
-            ans.insert((y, x));
-        }
-
-        for (dy, dx) in DIRS {
-            let npos @ (ny, nx) = (y + dy as i64, x + dx as i64);
-            if (ny >= 0 && ny < map.len() as i64 && nx >= 0 && nx < map[0].len() as i64)
-                && map[ny as usize][nx as usize] != '#'
-            {
-                // go to all the ones that have steps before going on to steps + 1
-                queue.push_back((npos, steps + 1));
-            }
-        }
-    }
-
-    let half = map.len() as i64 / 2;
-
-    let n = (STEPS2 - half) / map.len() as i64;
-
-    let size = map.len() as i64;
-
-    let end = (map.len() - 1) as i64;
-
-    println!("1:");
-    crate::dot!(map, |y, x, c| {
-        if visited.contains_key(&(x, y))
-            && visited[&(x, y)] % 2 == 1
-            && dist(x, y, half, 0) <= end
-        {
-            'O'
-        } else {
-            c
-        }
-    });
-
-    println!("2:");
-    crate::dot!(map, |y, x, c| {
-        if visited.contains_key(&(x, y))
-            && visited[&(x, y)] % 2 == 1
-            && dist(x, y, end, 0) <= size + half
-        {
-            'O'
-        } else {
-            c
-        }
-    });
-
-    println!("3:");
-    crate::dot!(map, |y, x, c| {
-        if visited.contains_key(&(x, y)) && visited[&(x, y)] % 2 == 0 && dist(x, y, end, 0) <= half
-        {
-            'O'
-        } else {
-            c
-        }
-    });
 
     /*
     n=2
@@ -153,77 +78,81 @@ fn bfs(map: &Vec<Vec<char>>, (sy, sx): (i64, i64)) -> (i64, i64) {
     3=16 n * all corner
     */
 
-    let odd = visited.values().filter(|&&steps| steps % 2 == 1).count() as i64;
-    let even = visited.values().filter(|&&steps| steps % 2 == 0).count() as i64;
+    
+    let half = map.len() as i64 / 2;
+    let n = (STEPS2 - half) / map.len() as i64;
 
-    // 1
-    let tip = visited
-        .iter()
-        .filter(|&(&(y, x), &steps)| steps % 2 == 1 && dist(x, y, size, half) <= end) // <
-        .count()
-        + visited
-            .iter()
-            .filter(|&(&(y, x), &steps)| steps % 2 == 1 && dist(x, y, half, size) <= end) // ^
-            .count()
-        + visited
-            .iter()
-            .filter(|&(&(y, x), &steps)| steps % 2 == 1 && dist(x, y, 0, half) <= end) // >
-            .count()
-        + visited
-            .iter()
-            .filter(|&(&(y, x), &steps)| steps % 2 == 1 && dist(x, y, half, 0) <= end) // v
-            .count();
+    let end = map.len() as i64 - 1; // inclusive end
+
+    let size = map.len() as i64;
+
+    let odd = bfs(&map, start, size, 1);
+    let even = bfs(&map, start, size, 0);
 
     // 2
-    let edge_corner = visited
-        .iter()
-        .filter(|&(&(y, x), &steps)| steps % 2 == 1 && dist(x, y, end, end) <= size + half) // / top
-        .count()
-        + visited
-            .iter()
-            .filter(|&(&(y, x), &steps)| steps % 2 == 1 && dist(x, y, 0, end) <= size + half) // top \
-            .count()
-        + visited
-            .iter()
-            .filter(|&(&(y, x), &steps)| steps % 2 == 1 && dist(x, y, 0, 0) <= size + half) // bottom /
-            .count()
-        + visited
-            .iter()
-            .filter(|&(&(y, x), &steps)| steps % 2 == 1 && dist(x, y, end, 0) <= size + half) // \ bottom
-            .count();
+    let corner_tl = bfs(&map, (0, 0), size + half, 1);
+    let corner_tr = bfs(&map, (0, end), size + half, 1);
+    let corner_bl = bfs(&map, (end, 0), size + half, 1);
+    let corner_br = bfs(&map, (end, end), size + half, 1);
+
+    // 1
+    let tiptop = bfs(&map, (end, half), size, 0);
+    let tipright = bfs(&map, (half, 0), size, 0);
+    let tipbottom = bfs(&map, (0, half), size, 0);
+    let tipleft = bfs(&map, (half, end), size, 0);
 
     // 3
-    let smol_edge = visited
-        .iter()
-        .filter(|&(&(y, x), &steps)| steps % 2 == 0 && dist(x, y, end, end) <= half) // / top
-        .count()
-        + visited
-            .iter()
-            .filter(|&(&(y, x), &steps)| steps % 2 == 0 && dist(x, y, 0, end) <= half) // top \
-            .count()
-        + visited
-            .iter()
-            .filter(|&(&(y, x), &steps)| steps % 2 == 0 && dist(x, y, 0, 0) <= half) // bottom /
-            .count()
-        + visited
-            .iter()
-            .filter(|&(&(y, x), &steps)| steps % 2 == 0 && dist(x, y, end, 0) <= half) // \ bottom
-            .count();
+    let smol_tl = bfs(&map, (0, 0), half, 0);
+    let smol_tr = bfs(&map, (0, end), half, 0);
+    let smol_bl = bfs(&map, (end, 0), half, 0);
+    let smol_br = bfs(&map, (end, end), half, 0);
 
-    let (tip, edge_corner, smol_edge) = (tip as i64, edge_corner as i64, smol_edge as i64);
+    // 622926941971282 <<
+    // 622926942173582
 
-    let odd_grid_count = (n - 1).pow(2);
-    let even_grid_count = (n).pow(2);
+    println!("odd={odd} even={even}");
+    println!("corners={} {} {} {}", corner_tl, corner_tr, corner_bl, corner_br);
+    println!("top = {} {} {} {}", tiptop, tipright, tipbottom, tipleft);
+    println!("smol = {} {} {} {}", smol_tl, smol_tr, smol_bl, smol_br);
 
-    println!("n={n} even: {even}, odd: {odd} half={half}");
-    println!("# odd ={odd_grid_count} # even = {even_grid_count}");
+    let num_odds = (n - 1).pow(2);
+    let num_evens = n.pow(2);
 
-    (
-        ans.len() as i64,
-        odd_grid_count * odd + even_grid_count * even + tip + (n - 1) * edge_corner + n * smol_edge,
-    )
+    println!("# odds= {} #evens={}", num_odds, num_evens);
+
+    let count = (tiptop + tipright + tipbottom + tipleft) + (n - 1) * (corner_tl + corner_tr + corner_br + corner_bl) + n * (smol_tl + smol_tr + smol_bl + smol_br) + num_odds * odd + num_evens * even;
+    println!("Part2: {}", count);
 }
 
-fn dist(x1: i64, y1: i64, x2: i64, y2: i64) -> i64 {
-    (x1 - x2).abs() + (y1 - y2).abs()
+fn bfs(map: &Vec<Vec<char>>, (sy, sx): (i64, i64), max_steps: i64, parity: i64) -> i64 {
+    let mut queue = VecDeque::new();
+    let mut visited = HashSet::new();
+
+    queue.push_front(((sy, sx), 0));
+
+    let mut ans = HashSet::new();
+
+    while let Some(((y, x), steps)) = queue.pop_front() {
+        if visited.contains(&(y, x)) {
+            continue;
+        }
+
+        visited.insert((y, x));
+
+        if steps % 2 == parity && steps <= max_steps {
+            ans.insert((y, x));
+        }
+
+        for (dy, dx) in DIRS {
+            let npos @ (ny, nx) = (y + dy as i64, x + dx as i64);
+            if (ny >= 0 && ny < map.len() as i64 && nx >= 0 && nx < map[0].len() as i64)
+                && map[ny as usize][nx as usize] != '#'
+            {
+                // go to all the ones that have steps before going on to steps + 1
+                queue.push_back((npos, steps + 1));
+            }
+        }
+    }
+
+    ans.len() as i64
 }
