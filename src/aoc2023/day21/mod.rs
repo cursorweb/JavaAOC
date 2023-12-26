@@ -107,18 +107,8 @@ pub fn run() {
     let smol_bl = bfs(&map, (end, 0), half, 0);
     let smol_br = bfs(&map, (end, end), half, 0);
 
-    // 622926941971282 <<
-    // 622926942173582
-
-    println!("odd={odd} even={even}");
-    println!("corners={} {} {} {}", corner_tl, corner_tr, corner_bl, corner_br);
-    println!("top = {} {} {} {}", tiptop, tipright, tipbottom, tipleft);
-    println!("smol = {} {} {} {}", smol_tl, smol_tr, smol_bl, smol_br);
-
     let num_odds = (n - 1).pow(2);
     let num_evens = n.pow(2);
-
-    println!("# odds= {} #evens={}", num_odds, num_evens);
 
     let count = (tiptop + tipright + tipbottom + tipleft) + (n - 1) * (corner_tl + corner_tr + corner_br + corner_bl) + n * (smol_tl + smol_tr + smol_bl + smol_br) + num_odds * odd + num_evens * even;
     println!("Part2: {}", count);
