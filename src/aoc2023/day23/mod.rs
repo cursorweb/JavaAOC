@@ -36,6 +36,7 @@ pub fn run() {
                         }
                     }
 
+                    // |- or +
                     if neighbors >= 3 {
                         Some((y as i32, x as i32))
                     } else {
@@ -52,19 +53,23 @@ pub fn run() {
     points.insert((0, 1));
     points.insert(end);
 
-    let graph = create_graph(points, &map);
+    let graph = create_graph(&points, &map);
+    let mut visited = HashSet::new();
+    println!("Part1: {}", dfs(&graph, ((0, 1), 0), end, &mut visited));
 
-    println!("Part1: {}", dfs(&graph, end));
+    let graph = create_graph2(&points, &map);
+    assert!(visited.is_empty());
+    println!("Part2: {}", dfs(&graph, ((0, 1), 0), end, &mut visited));
 }
 
 // point to many points of dist
 fn create_graph(
-    points: HashSet<(i32, i32)>,
+    points: &HashSet<(i32, i32)>,
     map: &Vec<Vec<char>>,
 ) -> HashMap<(i32, i32), HashMap<(i32, i32), i32>> {
     let mut graph = HashMap::new();
 
-    for &start_point in &points {
+    for &start_point in points {
         let mut stack = Vec::new();
         let mut visited = HashSet::new();
         stack.push((start_point, 0));
@@ -110,32 +115,71 @@ fn create_graph(
     graph
 }
 
-fn dfs(map: &HashMap<(i32, i32), HashMap<(i32, i32), i32>>, dest: (i32, i32)) -> i32 {
-    let mut stack = Vec::new();
-    let mut visited = HashSet::new();
+fn create_graph2(
+    points: &HashSet<(i32, i32)>,
+    map: &Vec<Vec<char>>,
+) -> HashMap<(i32, i32), HashMap<(i32, i32), i32>> {
+    let mut graph = HashMap::new();
 
-    let start = (0, 1);
+    for &start_point in points {
+        let mut stack = Vec::new();
+        let mut visited = HashSet::new();
+        stack.push((start_point, 0));
+        visited.insert(start_point);
 
-    let mut max_dist = 0;
+        while let Some((point, dist)) = stack.pop() {
+            if dist > 0 && points.contains(&(point)) {
+                graph
+                    .entry(start_point)
+                    .or_insert(HashMap::new())
+                    .insert(point, dist);
+                continue;
+            }
 
-    stack.push((start, 0));
+            let (y, x) = point;
 
-    while let Some((pos, dist)) = stack.pop() {
-        if pos == dest {
-            max_dist = max_dist.max(dist);
-            continue;
-        }
+            for (dy, dx) in DIRS {
+                let (ny, nx) = (y + dy, x + dx);
 
-        // trying everything, so we need to remove at the end to allow
-        // another path
-        visited.insert(pos);
-        for (&next, d) in &map[&pos] {
-            if !visited.contains(&next) {
-                stack.push((next, dist + d));
+                if ny >= 0
+                    && nx >= 0
+                    && ny < map.len() as i32
+                    && nx < map[0].len() as i32
+                    && map[ny as usize][nx as usize] != '#'
+                    && !visited.contains(&(ny, nx))
+                {
+                    stack.push(((ny, nx), dist + 1));
+                    visited.insert((ny, nx));
+                }
             }
         }
-        visited.remove(&pos);
     }
 
-    max_dist
+    graph
+}
+
+fn dfs(
+    map: &HashMap<(i32, i32), HashMap<(i32, i32), i32>>,
+    (pos, dist): ((i32, i32), i32),
+    dest: (i32, i32),
+    visited: &mut HashSet<(i32, i32)>,
+    // _map: &Vec<Vec<char>>,
+) -> i32 {
+    if pos == dest {
+        return dist;
+    }
+
+    // crate::dot!(_map, |y, x, c| if (y, x) == pos { 'O' } else { c }, true);
+
+    let mut max = 0;
+    // trying everything, so we need to remove at the end to allow
+    // another path
+    visited.insert(pos);
+    for (&next, d) in &map[&pos] {
+        if !visited.contains(&next) {
+            max = max.max(dfs(map, (next, dist + d), dest, visited));
+        }
+    }
+    visited.remove(&pos);
+    max
 }
