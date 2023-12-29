@@ -163,13 +163,10 @@ fn dfs(
     (pos, dist): ((i32, i32), i32),
     dest: (i32, i32),
     visited: &mut HashSet<(i32, i32)>,
-    // _map: &Vec<Vec<char>>,
 ) -> i32 {
     if pos == dest {
         return dist;
     }
-
-    // crate::dot!(_map, |y, x, c| if (y, x) == pos { 'O' } else { c }, true);
 
     let mut max = 0;
     // trying everything, so we need to remove at the end to allow
