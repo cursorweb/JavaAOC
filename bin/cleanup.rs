@@ -1,5 +1,7 @@
 //! Removes data.txt files
 //! You don't need them all
+//!
+//! TODO: REORGANIZE `mod.rs` listings to be in NUMERICAL order!!
 use std::{
     fs, io,
     path::{Path, PathBuf},

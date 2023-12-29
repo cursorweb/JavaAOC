@@ -37,7 +37,7 @@ macro_rules! read {
 /// It is in the form (y, x) with negative being up and left
 pub const DIRS: [(i32, i32); 4] = [(-1, 0), (1, 0), (0, -1), (0, 1)];
 
-/// in the form (y, x) with negative being up and left
+/// In the form (y, x) with negative being up and left
 pub fn name_to_dirs(name: &str) -> (i32, i32) {
     match name {
         "U" => (-1, 0),
@@ -48,7 +48,7 @@ pub fn name_to_dirs(name: &str) -> (i32, i32) {
     }
 }
 
-/// debug version for easy printing in the form (x, y)
+/// Debug version for easy printing in the form (x, y)
 pub fn name_to_dirs_dbg(name: &str) -> (i32, i32) {
     match name {
         "U" => (0, -1),
@@ -59,12 +59,12 @@ pub fn name_to_dirs_dbg(name: &str) -> (i32, i32) {
     }
 }
 
-/// checks if two ranges intersect
+/// Checks if two ranges intersect
 pub fn range_intersects<T: PartialOrd>(r1: (T, T), r2: (T, T)) -> bool {
     return (r1.0 <= r2.1) && (r1.1 >= r2.0);
 }
 
-/// enter as step debugging
+/// Pause terminal as a form of step debugging
 #[macro_export]
 macro_rules! input {
     () => {
@@ -76,8 +76,9 @@ macro_rules! input {
     };
 }
 
-/// print grid of array
-/// (y, x) where y++ and x++ are down and right
+/// Print the grid of an array.
+///
+/// Format: `(y, x)` where `y++` and `x++` are down and right.
 ///
 /// Usage:
 /// ```

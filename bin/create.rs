@@ -1,3 +1,4 @@
+// TODO: create year folder if it doesn't exist!
 use std::{
     env,
     fs::{self, File, OpenOptions},
