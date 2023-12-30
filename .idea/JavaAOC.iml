@@ -5,6 +5,9 @@
     <content url="file://$MODULE_DIR$">
       <sourceFolder url="file://$MODULE_DIR$" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/Resources" type="java-resource" />
+      <excludeFolder url="file://$MODULE_DIR$/AOC2020" />
+      <excludeFolder url="file://$MODULE_DIR$/AOC2021" />
+      <excludeFolder url="file://$MODULE_DIR$/AOC2022" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
