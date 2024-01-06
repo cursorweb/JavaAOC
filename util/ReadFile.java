@@ -1,4 +1,4 @@
-package Util;
+package util;
 
 import java.io.InputStream;
 import java.util.Objects;

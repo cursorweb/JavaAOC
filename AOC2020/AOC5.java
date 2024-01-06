@@ -1,6 +1,6 @@
 package AOC2020;
 
-import Util.ReadFile;
+import util.ReadFile;
 
 import java.util.ArrayList;
 import java.util.List;

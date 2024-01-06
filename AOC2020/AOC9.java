@@ -1,6 +1,6 @@
 package AOC2020;
 
-import Util.ReadFile;
+import util.ReadFile;
 
 public class AOC9 {
     public static void main(String[] args) {

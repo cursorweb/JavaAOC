@@ -1,6 +1,6 @@
 package AOC2022;
 
-import Util.ReadFile;
+import util.ReadFile;
 
 import java.util.HashMap;
 

@@ -1,6 +1,6 @@
 package AOC2023;
 
-import Util.ReadFile;
+import util.ReadFile;
 
 public class AOC1 {
     public static void main(String[] args) {
