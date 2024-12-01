@@ -3,10 +3,11 @@ use std::{
     env,
     fs::{self, File, OpenOptions},
     io::{Error, Write},
+    path::Path,
     process,
 };
 
-const YEAR: i32 = 2023;
+const YEAR: i32 = 2024;
 
 struct Puzzle {
     day: i32,
@@ -28,7 +29,7 @@ impl Puzzle {
     }
 
     fn create_folder(&self, path: &str) -> Result<(), Error> {
-        println!("Creating folder: {path}");
+        println!("Creating day folder: {path}");
 
         fs::create_dir(path)?;
         Ok(())
@@ -37,7 +38,7 @@ impl Puzzle {
     fn create_data(&self, path: &str) -> Result<(), Error> {
         let path = format!("{path}/data.txt");
 
-        println!("Creating {path}");
+        println!("Creating data.txt {path}");
 
         File::create(path)?;
         Ok(())
@@ -47,7 +48,7 @@ impl Puzzle {
         let template = include_str!("template.txt");
         let path = format!("{path}/mod.rs");
 
-        println!("Writing {path}");
+        println!("Writing day mod.rs {path}");
 
         let mut code = File::create(path)?;
         code.write_all(template.as_bytes())?;
@@ -100,7 +101,18 @@ fn parse_args() -> Result<Puzzle, String> {
         year.parse().map_err(|_| "Couldn't parse year")
     })?;
 
-    let path = format!("./src/aoc{}/", year);
+    let path = format!("./src/aoc{year}/");
+
+    if !Path::new(&path).exists() {
+        println!("Creating year folder {path}");
+        fs::create_dir(&path).map_err(|e| format!("Unable to create folder 'aoc{year}/': {e}"))?;
+
+        let mod_path = format!("{path}mod.rs");
+        println!("Creating year mod.rs file {mod_path}");
+        File::create(mod_path)
+            .map_err(|e| format!("Unable to create file 'aoc{year}/mod.rs': {e}"))?;
+    }
+
     let day: i32 = args.next().map_or_else(
         || {
             Ok::<i32, String>(
