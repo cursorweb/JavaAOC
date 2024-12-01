@@ -21,11 +21,10 @@ pub fn run() {
 
     println!("Part1: {part1}");
 
-    let mut part2 = 0;
-    for i in left {
-        let count = right.iter().filter(|&&n| n == i).count();
-        part2 += i * count as i32;
-    }
+    let part2 = left.iter().fold(0, |acc, i| {
+        let count = right.iter().filter(|&n| n == i).count();
+        acc + i * count as i32
+    });
 
     println!("Part2: {part2}");
 }
