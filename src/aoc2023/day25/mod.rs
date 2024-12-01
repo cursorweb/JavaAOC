@@ -21,15 +21,10 @@ pub fn run() {
         }
     }
 
-    // println!("{map:?}");
-
     // answers: bmd -- ngp, grd -- tqr, dlv -- tqh
 
     let caucus_one = ["bmd", "grd", "dlv"];
     let caucus_two = ["ngp", "tqr", "tqh"];
-
-    // let caucus_one = ["hfx", "bvb", "jqt"];
-    // let caucus_two = ["pzl", "cmg", "nvd"];
 
     let mut size_one = HashSet::from(caucus_one);
     for name in caucus_one {
@@ -79,6 +74,5 @@ pub fn run() {
         }
     }
 
-    println!("{} {}", size_one.len(), size_two.len());
     println!("{}", size_one.len() * size_two.len());
 }
