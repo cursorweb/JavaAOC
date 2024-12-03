@@ -12,7 +12,6 @@ pub fn run() {
 
     let mut should_do = true;
 
-    // let mut right;
     for c in file.chars() {
         if s == "do()" {
             should_do = true;
@@ -27,11 +26,11 @@ pub fn run() {
         if s == "mul" {
             if c == '(' {
                 mul_mode = true;
-                s.clear();
                 continue;
-            } else {
-                s.clear();
             }
+
+            // clear so you can get more keywords in
+            s.clear();
         }
 
         if mul_mode && c == ',' {
@@ -65,6 +64,7 @@ pub fn run() {
             s.clear();
         }
 
+        // check within the "function call" (must be numbers, cuz commas are markers and skip this check)
         if mul_mode && !c.is_ascii_digit() {
             s.clear();
             mul_mode = false;
