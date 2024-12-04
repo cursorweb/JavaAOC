@@ -37,6 +37,17 @@ macro_rules! read {
 /// It is in the form (y, x) with negative being up and left
 pub const DIRS: [(i32, i32); 4] = [(-1, 0), (1, 0), (0, -1), (0, 1)];
 
+pub const DIRS_EXTRA: [(i32, i32); 8] = [
+    (-1, 0),
+    (1, 0),
+    (0, -1),
+    (0, 1),
+    (-1, -1),
+    (1, -1),
+    (1, 1),
+    (-1, 1),
+];
+
 /// In the form (y, x) with negative being up and left
 pub fn name_to_dirs(name: &str) -> (i32, i32) {
     match name {
@@ -79,6 +90,7 @@ macro_rules! input {
 /// Print the grid of an array.
 ///
 /// Format: `(y, x)` where `y++` and `x++` are down and right.
+/// Optional boolean whether in "debug" mode (user input to step)
 ///
 /// Usage:
 /// ```
