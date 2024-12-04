@@ -1,10 +1,6 @@
-// use std::collections::{HashSet, VecDeque};
-
-use std::collections::HashSet;
-
 use itertools::Itertools;
 
-use crate::{dot, read, DIRS_EXTRA};
+use crate::{read, DIRS_EXTRA};
 
 /// (y, x, prev)
 // struct Point(i32, i32, HashSet<(i32, i32)>);
@@ -47,17 +43,10 @@ pub fn run() {
         sum += solve1(&grid, (y, x));
     }
 
-    let mut xx = HashSet::new();
     for (y, x) in &interests2 {
-        sum2 += solve2(&grid, (*y, *x), &mut xx);
+        sum2 += solve2(&grid, (*y, *x));
     }
 
-    let arr = "XMAS".chars().collect_vec();
-    dot!(grid, |y, x, c| if xx.contains(&(y, x)) {
-        arr[c as usize]
-    } else {
-        '.'
-    });
     println!("Part1: {sum}");
     println!("Part2: {sum2}");
 }
@@ -70,10 +59,13 @@ fn solve1(grid: &Vec<Vec<i32>>, (sy, sx): (i32, i32)) -> i32 {
 
         for _ in 0..3 {
             let (ny, nx) = (dy + y, dx + x);
+
+            // if out of bounds
             if ny < 0 || nx < 0 || ny >= grid.len() as i32 || nx >= grid[0].len() as i32 {
                 continue 'main;
             }
 
+            // each letter has to be successively greater
             if grid[ny as usize][nx as usize] <= grid[y as usize][x as usize] {
                 continue 'main;
             }
@@ -87,37 +79,23 @@ fn solve1(grid: &Vec<Vec<i32>>, (sy, sx): (i32, i32)) -> i32 {
     count
 }
 
-fn solve2(grid: &Vec<Vec<i32>>, (sy, sx): (usize, usize), x: &mut HashSet<(usize, usize)>) -> i32 {
+const XMAS: [&str; 4] = ["X", "M", "A", "S"];
+
+fn solve2(grid: &Vec<Vec<i32>>, (sy, sx): (usize, usize)) -> i32 {
+    // if A is edged, then ignore it
     if sy < 1 || sx < 1 || sy == grid.len() - 1 || sx == grid.len() - 1 {
         return 0;
     }
 
-    // let vecarr = vec![
-    //     grid[sy - 1][sx - 1],
-    //     grid[sy + 1][sx - 1],
-    //     grid[sy - 1][sx + 1],
-    //     grid[sy + 1][sx + 1],
-    // ];
-
-    let arr = ["X", "M", "A", "S"];
-
-    let top = arr[grid[sy - 1][sx - 1] as usize].to_owned() + arr[grid[sy + 1][sx + 1] as usize];
-    let bottom = arr[grid[sy + 1][sx - 1] as usize].to_owned() + arr[grid[sy - 1][sx + 1] as usize];
-    println!("{top} {bottom}");
+    let tl_br =
+        XMAS[grid[sy - 1][sx - 1] as usize].to_owned() + XMAS[grid[sy + 1][sx + 1] as usize];
+    let bl_tr =
+        XMAS[grid[sy + 1][sx - 1] as usize].to_owned() + XMAS[grid[sy - 1][sx + 1] as usize];
 
     // M == 1, S == 3
-    if (top == "MS" || top == "SM") && (bottom == "SM" || bottom == "MS") {
-        x.insert((sy, sx));
-        x.insert((sy - 1, sx - 1));
-        x.insert((sy + 1, sx - 1));
-        x.insert((sy - 1, sx + 1));
-        x.insert((sy + 1, sx + 1));
+    if (tl_br == "MS" || tl_br == "SM") && (bl_tr == "SM" || bl_tr == "MS") {
         1
     } else {
         0
     }
-}
-
-fn count(arr: &Vec<i32>, x: i32) -> usize {
-    arr.iter().filter(|&n| *n == x).count()
 }
