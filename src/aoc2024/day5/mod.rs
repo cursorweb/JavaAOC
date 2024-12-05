@@ -73,30 +73,3 @@ fn check_valid(order: &Vec<i32>, rules: &HashMap<i32, Vec<i32>>) -> bool {
 
     true
 }
-
-// fn dfs_x(num: i32, prev: i32, rules: &HashMap<i32, Vec<i32>>) -> bool {
-//     let mut stack = Vec::new();
-//     let mut visited = HashSet::new();
-//     stack.push(num);
-
-//     loop {
-//         let Some(top) = stack.pop() else {
-//             break;
-//         };
-
-//         if !visited.contains(&top) {
-//             visited.insert(top);
-
-//             let Some(xs) = rules.get(&top) else { continue };
-//             for &x in xs {
-//                 if x == prev {
-//                     return true;
-//                 } else {
-//                     stack.push(x);
-//                 }
-//             }
-//         }
-//     }
-
-//     false
-// }
