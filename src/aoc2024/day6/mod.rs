@@ -21,13 +21,7 @@ use Dir::*;
 pub fn run() {
     let file = read!();
 
-    // let obstacles =
     let mut guard = None;
-
-    // let grid = file
-    //     .map(|row| row.chars().map(|c| c))
-    //     .collect_vec();
-
     let mut grid = vec![];
 
     for (y, r) in file.enumerate() {
