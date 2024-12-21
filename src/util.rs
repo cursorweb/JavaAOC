@@ -173,3 +173,18 @@ pub fn gcd(first: i64, second: i64) -> i64 {
         min = res;
     }
 }
+
+/// Check if a point is in bounds of a grid
+///
+/// Usage
+/// ```
+/// let grid = vec![vec![0, 0], vec![0, 0]];
+/// assert!(in_grid_bounds((0, 0), &grid));
+/// assert!(!in_grid_bounds((-1, 0), &grid));
+/// ```
+pub fn in_grid_bounds<T>((y, x): (i32, i32), arr: &Vec<Vec<T>>) -> bool {
+    let height = arr.len();
+    let width = arr[0].len();
+
+    return y >= 0 && x >= 0 && y < height as i32 && x < width as i32;
+}

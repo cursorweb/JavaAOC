@@ -115,15 +115,3 @@ fn get_checksum(disk: &[i64]) -> i64 {
         }
     })
 }
-
-fn show(disk: &[i64]) {
-    for i in disk {
-        if *i == -1 {
-            print!(".");
-        } else {
-            print!("{i}");
-        }
-    }
-
-    println!();
-}
