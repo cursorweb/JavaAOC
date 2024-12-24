@@ -17,28 +17,6 @@ def split_digits(x: int):
     return int(left), int(right)
 
 
-def mainloop():
-    i = 0
-    while i < len(nums):
-        num = nums[i]
-        if num == 0:
-            nums[i] = 1
-        elif count_digits(num) % 2 == 0:
-            left, right = split_digits(num)
-            nums[i] = right
-            nums.insert(i, left)
-            i += 1
-        else:
-            nums[i] *= 2024
-        i += 1
-
-
-# for i in range(25):
-#     mainloop()
-
-# print("part1:", len(nums))
-
-
 cache = {}
 
 
@@ -60,6 +38,8 @@ def count_times(num, it=75):
     return out
 
 
-part1 = sum([count_times(n) for n in nums])
+part1 = sum([count_times(n, 25) for n in nums])
+part2 = sum([count_times(n) for n in nums])
 
-print(part1)
+print("part1:", part1)
+print("part2:", part2)
