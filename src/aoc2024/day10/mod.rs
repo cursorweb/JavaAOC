@@ -66,10 +66,9 @@ pub fn bfs(start: &(i32, i32), grid: &Vec<Vec<i32>>) -> i32 {
 }
 
 pub fn bfs2(start: &(i32, i32), grid: &Vec<Vec<i32>>) -> i32 {
+    // Remove visited to let the path retrace itself
     let mut queue = VecDeque::new();
-    let mut visited = HashSet::new();
 
-    visited.insert(*start);
     queue.push_front(*start);
 
     let mut out = 0;
@@ -92,7 +91,6 @@ pub fn bfs2(start: &(i32, i32), grid: &Vec<Vec<i32>>) -> i32 {
             let npos = (ny, nx);
 
             if in_grid_bounds(npos, grid) && grid[ny as usize][nx as usize] - elevation == 1 {
-                visited.insert(npos);
                 queue.push_front(npos);
             }
         }
