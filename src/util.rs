@@ -37,6 +37,11 @@ macro_rules! read {
 /// It is in the form (y, x) with negative being up and left
 pub const DIRS: [(i32, i32); 4] = [(-1, 0), (1, 0), (0, -1), (0, 1)];
 
+/// The diagonal directions (down right, down left, up left, up right)
+pub const DIRS_DIAG: [(i32, i32); 4] = [(1, 1), (1, -1), (-1, -1), (-1, 1)];
+
+/// The four directions (up, down, left, right)
+/// And the diagonal directions (up right, up left, down right, down left)
 pub const DIRS_EXTRA: [(i32, i32); 8] = [
     (-1, 0),
     (1, 0),
