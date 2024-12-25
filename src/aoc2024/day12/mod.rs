@@ -10,7 +10,7 @@ pub fn run() {
     // a list of all the visited points
     // if you are in this territory, you aren't in new territory
     let mut all_visited: HashSet<(i32, i32)> = HashSet::new();
-    let mut regions: Vec<(char, HashSet<(i32, i32)>)> = vec![];
+    let mut regions: Vec<HashSet<(i32, i32)>> = vec![];
 
     for (y, row) in grid.iter().enumerate() {
         for (x, &c) in row.iter().enumerate() {
@@ -19,40 +19,33 @@ pub fn run() {
             }
 
             let visited = flood_fill((y as i32, x as i32), c, &grid);
-            regions.push((c, visited.clone()));
+            regions.push(visited.clone());
             all_visited.extend(visited);
         }
     }
 
-    // TODO: use iterators
-    let mut sum = 0;
-    for (c, region) in &regions {
-        let peri = perimeter(*c, region, &grid);
-        let area = region.len() as i32;
-        let price = peri * area;
-        sum += price;
-    }
-
-    println!("Part1: {sum}");
-
-    let mut sum = 0;
-    for (_, region) in &regions {
+    let (part1, part2) = regions.iter().fold((0, 0), |(sum1, sum2), region| {
+        let peri = perimeter(region);
         let edges = edger(region);
         let area = region.len() as i32;
-        let price = area * edges;
-        sum += price;
-    }
 
-    println!("Part2: {sum}");
+        let price1 = area * peri;
+        let price2 = area * edges;
+
+        (sum1 + price1, sum2 + price2)
+    });
+
+    println!("Part1: {part1}");
+    println!("Part2: {part2}");
 }
 
-fn perimeter(c: char, region: &HashSet<(i32, i32)>, grid: &Vec<Vec<char>>) -> i32 {
+fn perimeter(region: &HashSet<(i32, i32)>) -> i32 {
     let mut sum = 0;
     for &(y, x) in region {
         let mut peri = 0;
         for (dy, dx) in DIRS {
-            let (ny, nx) = (y + dy, x + dx);
-            if !in_grid_bounds((ny, nx), &grid) || grid[ny as usize][nx as usize] != c {
+            let npos = (y + dy, x + dx);
+            if !region.contains(&npos) {
                 peri += 1;
             }
         }
@@ -77,9 +70,8 @@ fn edger(region: &HashSet<(i32, i32)>) -> i32 {
 
             if !region.contains(&vert) && !region.contains(&horiz) {
                 corners += 1;
-            }
-
-            if region.contains(&vert) && region.contains(&horiz) && !region.contains(&corner) {
+            } else if region.contains(&vert) && region.contains(&horiz) && !region.contains(&corner)
+            {
                 corners += 1;
             }
         }
