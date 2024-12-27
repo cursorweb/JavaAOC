@@ -56,22 +56,7 @@ pub fn run() {
     }
 
     let mut robots = robots;
-    'l: for i in 1..10_000 {
-        // why is it this code works but not with contains?
-        // idk
-        // let mut poses: HashMap<(i32, i32), i32> = HashMap::new();
-        // for robot in &mut robots {
-        //     let r = simulate_once(robot);
-        //     *poses.entry(r).or_default() += 1;
-        // }
-
-        // // they all need to be unique position
-        // for (_, &value) in &poses {
-        //     if value != 1 {
-        //         continue 'l;
-        //     }
-        // }
-
+    'l: for i in 1.. {
         // they all need to be in unique position
         let mut poses = HashSet::new();
         for robot in &mut robots {
@@ -95,7 +80,7 @@ pub fn run() {
         );
 
         println!("Part1: {}", quadrants.iter().product::<i32>());
-        println!("Part2: {i} (q to stop)");
+        println!("Part2: {i}");
         break;
     }
 }
