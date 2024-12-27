@@ -83,13 +83,16 @@ pub fn range_intersects<T: PartialOrd>(r1: (T, T), r2: (T, T)) -> bool {
 /// Pause terminal as a form of step debugging
 #[macro_export]
 macro_rules! input {
-    () => {
+    () => {{
         use std::io::{stdin, stdout, Write};
+
+        let mut s = String::new();
 
         print!(">>> {}:{}:{} : ", file!(), line!(), column!());
         stdout().flush().unwrap();
-        stdin().read_line(&mut String::new()).unwrap();
-    };
+        stdin().read_line(&mut s).unwrap();
+        s
+    }};
 }
 
 /// Print the grid of an array.
