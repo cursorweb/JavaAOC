@@ -18,14 +18,16 @@ pub fn run() {
     let mut password1 = 0;
 
     let mut num = 50;
-    for (a, b) in instrs {
-        if a == 'R' {
-            password2 += (num + b) / 100;
+    for (d, delta) in instrs {
+        if d == 'R' {
+            password2 += (num + delta) / 100;
         } else {
-            password2 += (100 - num + b) / 100 - (100 - num) / 100;
+            // num - delta is like -18 or something, so when you add 100, you get 118
+            // next, you subtract the original, 100 - num amt
+            password2 += (100 - (num - delta)) / 100 - (100 - num) / 100;
         }
 
-        num = (if a == 'R' { num + b } else { num - b }).rem_euclid(100);
+        num = (if d == 'R' { num + delta } else { num - delta }).rem_euclid(100);
 
         if num == 0 {
             password1 += 1;
