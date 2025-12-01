@@ -1,4 +1,4 @@
-// TODO: create year folder if it doesn't exist!
+// TODO: add mod to lib.rs, have a config file
 use std::{
     env,
     fs::{self, File, OpenOptions},
@@ -7,7 +7,7 @@ use std::{
     process,
 };
 
-const YEAR: i32 = 2024;
+const YEAR: i32 = 2025;
 
 struct Puzzle {
     day: i32,
