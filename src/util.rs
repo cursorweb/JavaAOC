@@ -154,6 +154,13 @@ macro_rules! dot {
     };
 }
 
+pub fn num_digits<T: Into<i64> + Copy>(num: T) -> u32 {
+    (num.into())
+        .checked_ilog10()
+        .unwrap_or_else(|| panic!("Bad number: {}", num.into())) as u32
+        + 1
+}
+
 pub fn iter_lcm(iter: impl Iterator<Item = i64>) -> i64 {
     iter.fold(1, |p, c| lcm(p, c))
 }
