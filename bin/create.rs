@@ -19,23 +19,23 @@ impl Puzzle {
         let path = format!("src/aoc{}/day{}", self.year, self.day);
         let path = path.as_str();
 
-        self.create_folder(path)?;
-        self.create_data(path)?;
-        self.create_code(path)?;
-        self.add_defs()?;
-        self.inject_main()?;
+        self.create_day_folder(path)?;
+        self.create_data_txt(path)?;
+        self.create_starter_code(path)?;
+        self.update_aoc_modrs()?;
+        self.rewrite_main()?;
 
         Ok(())
     }
 
-    fn create_folder(&self, path: &str) -> Result<(), Error> {
+    fn create_day_folder(&self, path: &str) -> Result<(), Error> {
         println!("Creating day folder: {path}");
 
         fs::create_dir(path)?;
         Ok(())
     }
 
-    fn create_data(&self, path: &str) -> Result<(), Error> {
+    fn create_data_txt(&self, path: &str) -> Result<(), Error> {
         let path = format!("{path}/data.txt");
 
         println!("Creating data.txt {path}");
@@ -44,7 +44,7 @@ impl Puzzle {
         Ok(())
     }
 
-    fn create_code(&self, path: &str) -> Result<(), Error> {
+    fn create_starter_code(&self, path: &str) -> Result<(), Error> {
         let template = include_str!("template.txt");
         let path = format!("{path}/mod.rs");
 
@@ -56,7 +56,7 @@ impl Puzzle {
         Ok(())
     }
 
-    fn add_defs(&self) -> Result<(), Error> {
+    fn update_aoc_modrs(&self) -> Result<(), Error> {
         let path = format!("src/aoc{}/mod.rs", self.year);
 
         println!("Adding 'use' in {path}");
@@ -68,7 +68,7 @@ impl Puzzle {
         Ok(())
     }
 
-    fn inject_main(&self) -> Result<(), Error> {
+    fn rewrite_main(&self) -> Result<(), Error> {
         println!("Rewriting src/main.rs");
 
         let template = format!(include_str!("main_fmt.txt"), self.year, self.day);

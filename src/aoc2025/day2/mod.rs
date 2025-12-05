@@ -5,15 +5,6 @@ use itertools::Itertools;
 use crate::{num_digits, read};
 
 pub fn run() {
-    // let mut id = 0;
-    // let x = 12;
-    // let digits = num_digits(x);
-    // for i in 0..3 {
-    //     id += x * 10i32.pow(i * digits);
-    // }
-    // println!("{id}");
-    // return;
-
     let file = read!(str).split(",");
     let ranges = file
         .map(|line| {
@@ -76,7 +67,6 @@ fn first_n(x: i64, n: u32) -> i64 {
 fn invalid_ids_repeat((min, max): (i64, i64), repeats: u32) -> HashSet<i64> {
     let size = num_digits(min) / repeats;
     let x = first_n(min, size)..=first_n(max, size);
-    let max_num_digits = num_digits(min);
 
     x.filter_map(|n| {
         let mut id = 0;
