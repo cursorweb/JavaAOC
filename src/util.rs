@@ -201,5 +201,5 @@ pub fn in_grid_bounds<T>((y, x): (i32, i32), arr: &Vec<Vec<T>>) -> bool {
     let height = arr.len();
     let width = arr[0].len();
 
-    return y >= 0 && x >= 0 && y < height as i32 && x < width as i32;
+    y >= 0 && x >= 0 && y < height as i32 && x < width as i32
 }
